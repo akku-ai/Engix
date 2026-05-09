@@ -14,7 +14,7 @@ export default function HeroSection() {
               transition={{ duration: 0.6 }}
             >
               <span className="engix-home-badge">
-                Trusted by international and domestic clients
+                Trusted by International and Domestic clients
               </span>
 
               <h1>
