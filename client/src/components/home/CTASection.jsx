@@ -10,7 +10,7 @@ export default function CTASection() {
               <span className="engix-home-label">Let’s build together</span>
               <h2>Ready to build a professional website, app, or software product?</h2>
               <p>
-                Engix helps businesses turn ideas into polished digital products
+                Engix helps businesses turn ideas into polished digital productss
                 with modern design and reliable development.
               </p>
             </div>
