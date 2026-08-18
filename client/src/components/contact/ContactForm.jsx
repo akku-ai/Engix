@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  AlertCircle,
+  Loader2
+} from 'lucide-react';
+
 import api from '../../api/axios';
 
 const initialState = {
@@ -12,12 +20,17 @@ const initialState = {
   role: '',
   country: '',
   service: '',
+  budget: '',
+  timeline: '',
   message: '',
   consent: false
 };
 
 export default function ContactForm() {
+  const location = useLocation();
+
   const [form, setForm] = useState(initialState);
+
   const [loading, setLoading] = useState(false);
 
   const [status, setStatus] = useState({
@@ -45,6 +58,10 @@ export default function ContactForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (loading) {
+      return;
+    }
+
     setStatus({
       type: '',
       message: ''
@@ -54,7 +71,25 @@ export default function ContactForm() {
       setStatus({
         type: 'error',
         message:
-          'Please confirm that we may use your information to respond to this enquiry.'
+          'Please confirm that Engix may use your information to respond to this enquiry.'
+      });
+
+      return;
+    }
+
+    if (
+      !form.firstName ||
+      !form.lastName ||
+      !form.email ||
+      !form.company ||
+      !form.country ||
+      !form.inquiryType ||
+      !form.message
+    ) {
+      setStatus({
+        type: 'error',
+        message:
+          'Please complete all required fields before submitting your enquiry.'
       });
 
       return;
@@ -63,23 +98,11 @@ export default function ContactForm() {
     setLoading(true);
 
     try {
-      /*
-        This also keeps fields compatible with
-        your previous lead API structure.
-
-        name
-        email
-        company
-        service
-        message
-
-        Extra fields are included so they can
-        later be added to your MongoDB model.
-      */
+      const fullName =
+        `${form.firstName} ${form.lastName}`.trim();
 
       const payload = {
-        name:
-          `${form.firstName} ${form.lastName}`.trim(),
+        name: fullName,
 
         firstName: form.firstName,
         lastName: form.lastName,
@@ -92,37 +115,140 @@ export default function ContactForm() {
 
         country: form.country,
 
+        inquiryType: form.inquiryType,
+
         service:
           form.service ||
           form.inquiryType,
 
-        inquiryType:
-          form.inquiryType,
+        budget: form.budget,
 
-        message:
-          form.message
+        timeline: form.timeline,
+
+        message: form.message,
+
+        source:
+          location.pathname === '/solutions'
+            ? 'Solutions Landing Page'
+            : 'Contact Page',
+
+        page: location.pathname
       };
+
+      console.log(
+        'Submitting Engix enquiry:',
+        payload
+      );
+
+      console.log(
+        'API Base URL:',
+        api.defaults.baseURL
+      );
 
       const response = await api.post(
         '/leads',
         payload
       );
 
+      console.log(
+        'Engix enquiry response:',
+        response.data
+      );
+
       setStatus({
         type: 'success',
+
         message:
           response?.data?.message ||
-          'Thank you. Your enquiry has been sent to Engix successfully.'
+          'Thank you. Your enquiry has been sent successfully.'
       });
 
+      /*
+        Future Google Tag Manager / GA4
+        conversion event.
+      */
+
+      if (typeof window !== 'undefined') {
+        window.dataLayer =
+          window.dataLayer || [];
+
+        window.dataLayer.push({
+          event: 'generate_lead',
+
+          service:
+            form.service ||
+            form.inquiryType,
+
+          lead_source:
+            location.pathname === '/solutions'
+              ? 'solutions_landing_page'
+              : 'contact_page'
+        });
+      }
+
       setForm(initialState);
+
     } catch (error) {
+      console.error(
+        'ENGIX FORM SUBMISSION ERROR:',
+        error
+      );
+
+      console.error(
+        'Error message:',
+        error?.message
+      );
+
+      console.error(
+        'Backend status:',
+        error?.response?.status
+      );
+
+      console.error(
+        'Backend response:',
+        error?.response?.data
+      );
+
+      console.error(
+        'Request base URL:',
+        error?.config?.baseURL
+      );
+
+      console.error(
+        'Request path:',
+        error?.config?.url
+      );
+
+      console.error(
+        'Full request URL:',
+        `${
+          error?.config?.baseURL || ''
+        }${
+          error?.config?.url || ''
+        }`
+      );
+
+      let errorMessage =
+        'We could not send your enquiry. Please try again or contact us by email.';
+
+      if (error?.response?.data?.message) {
+        errorMessage =
+          error.response.data.message;
+      } else if (
+        error?.code === 'ERR_NETWORK'
+      ) {
+        errorMessage =
+          'The Engix server could not be reached. Please make sure the backend is running and try again.';
+      } else if (error?.message) {
+        errorMessage =
+          error.message;
+      }
+
       setStatus({
         type: 'error',
-        message:
-          error?.response?.data?.message ||
-          'We could not send your enquiry. Please try again or contact us by email.'
+        message: errorMessage
       });
+
     } finally {
       setLoading(false);
     }
@@ -134,12 +260,19 @@ export default function ContactForm() {
         className="engix-enterprise-form"
         onSubmit={handleSubmit}
       >
-        {/* ENQUIRY */}
+
+        {/* ======================================
+            01 - ENQUIRY
+        ======================================= */}
 
         <div className="engix-form-section-heading">
-          <span>01</span>
+
+          <span>
+            01
+          </span>
 
           <div>
+
             <h3>
               Your enquiry
             </h3>
@@ -148,10 +281,14 @@ export default function ContactForm() {
               Tell us what you would like
               to discuss with Engix.
             </p>
+
           </div>
+
         </div>
 
+
         <div className="engix-form-field">
+
           <label htmlFor="inquiryType">
             Inquiry type *
           </label>
@@ -163,6 +300,7 @@ export default function ContactForm() {
             onChange={handleChange}
             required
           >
+
             <option value="">
               Select an option
             </option>
@@ -190,10 +328,14 @@ export default function ContactForm() {
             <option value="General">
               General enquiry
             </option>
+
           </select>
+
         </div>
 
+
         <div className="engix-form-field">
+
           <label htmlFor="service">
             Service or capability
           </label>
@@ -204,6 +346,7 @@ export default function ContactForm() {
             value={form.service}
             onChange={handleChange}
           >
+
             <option value="">
               Select a service
             </option>
@@ -236,6 +379,14 @@ export default function ContactForm() {
               UI/UX Design
             </option>
 
+            <option value="Backend & API Development">
+              Backend & API Development
+            </option>
+
+            <option value="Database Engineering">
+              Database Engineering
+            </option>
+
             <option value="API Integration">
               API Integration Services
             </option>
@@ -244,22 +395,39 @@ export default function ContactForm() {
               Cloud & DevOps Solutions
             </option>
 
+            <option value="Business Automation">
+              Business Automation
+            </option>
+
             <option value="Maintenance & Support">
               Application Maintenance & Support
+            </option>
+
+            <option value="Digital Transformation">
+              Digital Transformation
             </option>
 
             <option value="Other">
               Other
             </option>
+
           </select>
+
         </div>
 
-        {/* ABOUT YOU */}
+
+        {/* ======================================
+            02 - ABOUT YOU
+        ======================================= */}
 
         <div className="engix-form-section-heading engix-form-heading-gap">
-          <span>02</span>
+
+          <span>
+            02
+          </span>
 
           <div>
+
             <h3>
               About you
             </h3>
@@ -268,11 +436,16 @@ export default function ContactForm() {
               Your details help us route the enquiry
               to the right person.
             </p>
+
           </div>
+
         </div>
 
+
         <div className="engix-form-two">
+
           <div className="engix-form-field">
+
             <label htmlFor="firstName">
               First name *
             </label>
@@ -286,9 +459,12 @@ export default function ContactForm() {
               autoComplete="given-name"
               required
             />
+
           </div>
 
+
           <div className="engix-form-field">
+
             <label htmlFor="lastName">
               Last name *
             </label>
@@ -302,11 +478,16 @@ export default function ContactForm() {
               autoComplete="family-name"
               required
             />
+
           </div>
+
         </div>
 
+
         <div className="engix-form-two">
+
           <div className="engix-form-field">
+
             <label htmlFor="email">
               Business email *
             </label>
@@ -318,11 +499,15 @@ export default function ContactForm() {
               value={form.email}
               onChange={handleChange}
               autoComplete="email"
+              placeholder="you@company.com"
               required
             />
+
           </div>
 
+
           <div className="engix-form-field">
+
             <label htmlFor="phone">
               Phone number
             </label>
@@ -333,14 +518,19 @@ export default function ContactForm() {
               name="phone"
               value={form.phone}
               onChange={handleChange}
-              placeholder="+91"
+              placeholder="+91 98765 43210"
               autoComplete="tel"
             />
+
           </div>
+
         </div>
 
+
         <div className="engix-form-two">
+
           <div className="engix-form-field">
+
             <label htmlFor="company">
               Company / organization *
             </label>
@@ -352,11 +542,15 @@ export default function ContactForm() {
               value={form.company}
               onChange={handleChange}
               autoComplete="organization"
+              placeholder="Company name"
               required
             />
+
           </div>
 
+
           <div className="engix-form-field">
+
             <label htmlFor="role">
               Your role / function
             </label>
@@ -368,11 +562,16 @@ export default function ContactForm() {
               value={form.role}
               onChange={handleChange}
               autoComplete="organization-title"
+              placeholder="Founder, CTO, Manager..."
             />
+
           </div>
+
         </div>
 
+
         <div className="engix-form-field">
+
           <label htmlFor="country">
             Country / region *
           </label>
@@ -384,6 +583,7 @@ export default function ContactForm() {
             onChange={handleChange}
             required
           >
+
             <option value="">
               Select country / region
             </option>
@@ -427,15 +627,30 @@ export default function ContactForm() {
             <option value="Other">
               Other
             </option>
+
           </select>
+
         </div>
 
-        {/* MESSAGE */}
+
+        {/* ======================================
+            PROJECT DETAILS
+        ======================================= */}
+
+     
+
+        {/* ======================================
+            03 - MESSAGE
+        ======================================= */}
 
         <div className="engix-form-section-heading engix-form-heading-gap">
-          <span>03</span>
+
+          <span>
+            03
+          </span>
 
           <div>
+
             <h3>
               Your message
             </h3>
@@ -444,10 +659,14 @@ export default function ContactForm() {
               Share the challenge, requirement or
               opportunity you would like to discuss.
             </p>
+
           </div>
+
         </div>
 
+
         <div className="engix-form-field">
+
           <label htmlFor="message">
             How can we help you? *
           </label>
@@ -466,11 +685,16 @@ export default function ContactForm() {
           <small className="engix-character-count">
             {form.message.length} / 5000
           </small>
+
         </div>
 
-        {/* PRIVACY */}
+
+        {/* ======================================
+            PRIVACY
+        ======================================= */}
 
         <label className="engix-consent">
+
           <input
             type="checkbox"
             name="consent"
@@ -490,32 +714,68 @@ export default function ContactForm() {
             for the purpose of responding to my enquiry
             and related business communication.
           </p>
+
         </label>
+
+
+        {/* ======================================
+            STATUS
+        ======================================= */}
 
         {status.message && (
           <div
             className={`engix-form-status ${status.type}`}
+            role="status"
           >
-            {status.message}
+
+            {status.type === 'success' ? (
+              <CheckCircle2 size={20} />
+            ) : (
+              <AlertCircle size={20} />
+            )}
+
+            <span>
+              {status.message}
+            </span>
+
           </div>
         )}
+
+
+        {/* ======================================
+            SUBMIT
+        ======================================= */}
 
         <button
           type="submit"
           className="engix-enterprise-submit"
           disabled={loading}
         >
-          {loading
-            ? 'Sending enquiry...'
-            : 'Submit enquiry'}
 
-          {!loading && (
-            <ArrowRight size={19} />
+          {loading ? (
+            <>
+              <Loader2
+                size={19}
+                className="engix-form-loader"
+              />
+
+              Sending enquiry...
+            </>
+          ) : (
+            <>
+              Submit enquiry
+
+              <ArrowRight size={19} />
+            </>
           )}
+
         </button>
+
       </form>
 
+
       <style>{`
+
         .engix-enterprise-form {
           width: 100%;
         }
@@ -598,6 +858,8 @@ export default function ContactForm() {
         .engix-form-field textarea {
           width: 100%;
 
+          box-sizing: border-box;
+
           border: 0;
 
           border-bottom:
@@ -611,6 +873,8 @@ export default function ContactForm() {
 
           color: #111318;
 
+          font-family: inherit;
+
           padding:
             12px 0 14px;
 
@@ -619,7 +883,8 @@ export default function ContactForm() {
           line-height: 1.5;
 
           transition:
-            border-color .2s ease;
+            border-color .2s ease,
+            box-shadow .2s ease;
         }
 
         .engix-form-field select {
@@ -650,6 +915,9 @@ export default function ContactForm() {
         .engix-form-field textarea:focus {
           border-color:
             #111318;
+
+          box-shadow:
+            0 0 0 3px rgba(17,19,24,.04);
         }
 
         .engix-character-count {
@@ -663,6 +931,9 @@ export default function ContactForm() {
 
           text-align: right;
         }
+
+
+        /* CONSENT */
 
         .engix-consent {
           margin-top: 30px;
@@ -689,9 +960,11 @@ export default function ContactForm() {
 
         .engix-custom-checkbox {
           width: 21px;
+
           height: 21px;
 
           display: grid;
+
           place-items: center;
 
           border:
@@ -720,27 +993,51 @@ export default function ContactForm() {
           line-height: 1.65;
         }
 
+
+        /* STATUS */
+
         .engix-form-status {
           margin-top: 24px;
 
           padding: 15px 17px;
+
+          display: flex;
+
+          align-items: flex-start;
+
+          gap: 9px;
 
           font-size: 12px;
 
           line-height: 1.6;
         }
 
+        .engix-form-status svg {
+          flex-shrink: 0;
+
+          margin-top: 1px;
+        }
+
         .engix-form-status.success {
           background: #dff5df;
 
           color: #234526;
+
+          border:
+            1px solid #bcdcbc;
         }
 
         .engix-form-status.error {
           background: #f4dfd2;
 
           color: #693726;
+
+          border:
+            1px solid #e3c0aa;
         }
+
+
+        /* SUBMIT */
 
         .engix-enterprise-submit {
           min-height: 56px;
@@ -752,13 +1049,18 @@ export default function ContactForm() {
           border: 0;
 
           display: inline-flex;
+
           align-items: center;
+
+          justify-content: center;
 
           gap: 11px;
 
           background: #111318;
 
           color: white;
+
+          font-family: inherit;
 
           font-size: 14px;
 
@@ -774,7 +1076,8 @@ export default function ContactForm() {
         .engix-enterprise-submit:hover:not(:disabled) {
           background: #2b2b30;
 
-          transform: translateY(-2px);
+          transform:
+            translateY(-2px);
         }
 
         .engix-enterprise-submit:disabled {
@@ -783,7 +1086,23 @@ export default function ContactForm() {
           cursor: not-allowed;
         }
 
+        .engix-form-loader {
+          animation:
+            engix-form-spin .8s linear infinite;
+        }
+
+        @keyframes engix-form-spin {
+          to {
+            transform:
+              rotate(360deg);
+          }
+        }
+
+
+        /* MOBILE */
+
         @media (max-width: 650px) {
+
           .engix-form-two {
             grid-template-columns: 1fr;
 
@@ -799,7 +1118,9 @@ export default function ContactForm() {
 
             justify-content: center;
           }
+
         }
+
       `}</style>
     </>
   );
