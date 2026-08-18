@@ -1,242 +1,502 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2
+} from 'lucide-react';
 
 export default function HeroSection() {
   return (
     <>
       <section className="engix-home-hero">
         <div className="engix-home-shell">
+
           <div className="engix-home-hero-grid">
-            <motion.div
-              className="engix-home-hero-left"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="engix-home-badge">
-                Trusted by International and Domestic clients
+
+            <div className="engix-home-hero-copy">
+
+              <span className="engix-home-label">
+                SOFTWARE • AI • DIGITAL PRODUCTS
               </span>
 
               <h1>
-                Modern digital products
-                <br />
-                built with clarity,
-                <br />
-                quality, and confidence.
+                Technology built
+                for businesses
+                moving forward.
               </h1>
 
-              <p>
-                Engix is a professional IT company delivering websites, software,
-                mobile apps, UI/UX systems, and scalable digital solutions with a
-                clean, premium execution style.
+              <p className="engix-home-hero-lead">
+                Engix Tech Private Limited is a software engineering and
+                digital product company helping businesses turn ideas,
+                operational challenges and growth opportunities into
+                dependable technology.
+              </p>
+
+              <p className="engix-home-hero-secondary">
+                We combine product strategy, UI/UX, software engineering,
+                artificial intelligence, mobile development, backend systems
+                and cloud technology to design and build products that are
+                useful today and ready for what comes next.
               </p>
 
               <div className="engix-home-hero-actions">
-                <Link to="/contact" className="engix-home-btn-primary">
-                  Start your project
+
+                <Link
+                  to="/contact"
+                  className="engix-home-primary-btn"
+                >
+                  Start a conversation
+
+                  <ArrowRight
+                    size={21}
+                    strokeWidth={1.8}
+                  />
                 </Link>
-                <Link to="/services" className="engix-home-btn-secondary">
-                  Explore services
+
+                <Link
+                  to="/portfolio"
+                  className="engix-home-secondary-btn"
+                >
+                  Explore our work
+
+                  <ArrowUpRight
+                    size={20}
+                    strokeWidth={1.8}
+                  />
                 </Link>
+
               </div>
-            </motion.div>
 
-            <motion.div
-              className="engix-home-hero-right"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7 }}
-            >
-              <div className="engix-home-hero-card">
-                <span className="engix-home-label">Why Engix</span>
-                <h3>Clean design. Strong development. Reliable delivery.</h3>
+              <div className="engix-home-hero-trust">
 
-                <div className="engix-home-mini-grid">
-                  <div>
-                    <strong>2+</strong>
-                    <span>International Clients</span>
-                  </div>
-                  <div>
-                    <strong>Many</strong>
-                    <span>Domestic Clients</span>
-                  </div>
-                  <div>
-                    <strong>Modern</strong>
-                    <span>Design Systems</span>
-                  </div>
-                  <div>
-                    <strong>End-to-End</strong>
-                    <span>Technical Support</span>
-                  </div>
+                <div>
+                  <CheckCircle2 size={20} strokeWidth={1.7} />
+                  <span>International delivery experience</span>
                 </div>
+
+                <div>
+                  <CheckCircle2 size={20} strokeWidth={1.7} />
+                  <span>End-to-end product engineering</span>
+                </div>
+
+                <div>
+                  <CheckCircle2 size={20} strokeWidth={1.7} />
+                  <span>Long-term technology support</span>
+                </div>
+
               </div>
-            </motion.div>
+
+            </div>
+
+
+            <div className="engix-home-hero-visual">
+
+              {/* HOME-ONLY IMAGE #1 */}
+              <img
+                src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1800&q=90"
+                alt="Modern professional technology workspace"
+              />
+
+              <div className="engix-home-hero-overlay">
+
+                <span>
+                  ENGIX TECH PRIVATE LIMITED
+                </span>
+
+                <strong>
+                  Strategy.
+                  <br />
+                  Experience.
+                  <br />
+                  Engineering.
+                </strong>
+
+              </div>
+
+
+              <div className="engix-home-hero-floating-card">
+
+                <small>
+                  WHAT WE BRING TOGETHER
+                </small>
+
+                <div>
+                  <span>Product</span>
+                  <span>Software</span>
+                  <span>AI</span>
+                  <span>Cloud</span>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       </section>
 
       <style>{`
+
         .engix-home-hero {
-          background: #f8fafc;
-          padding: 76px 20px 36px;
+          padding: 90px 0 0;
+          background: #ffffff;
+          overflow: hidden;
         }
 
         .engix-home-shell {
-          max-width: 1180px;
+          width: min(1240px, calc(100% - 56px));
           margin: 0 auto;
         }
 
         .engix-home-hero-grid {
           display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: 28px;
-          align-items: center;
+          grid-template-columns: 1.05fr .95fr;
+          gap: 74px;
+          align-items: end;
         }
 
-        .engix-home-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px 16px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #334155;
-          font-size: 0.9rem;
-          font-weight: 600;
-          margin-bottom: 18px;
-          border: 1px solid rgba(15, 23, 42, 0.06);
+        .engix-home-hero-copy {
+          padding: 70px 0 105px;
         }
 
-        .engix-home-hero-left h1 {
-          margin: 0 0 18px;
-          font-size: clamp(2.7rem, 6vw, 5.2rem);
-          line-height: 0.98;
-          letter-spacing: -0.05em;
-          color: #0f172a;
+        .engix-home-label {
+          display: inline-block;
+          width: max-content;
+          padding: 7px 11px;
+          margin-bottom: 26px;
+
+          background: #e9e6ff;
+          color: #35304b;
+
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .12em;
         }
 
-        .engix-home-hero-left p {
+        .engix-home-hero h1 {
+          max-width: 850px;
+
           margin: 0;
+
+          color: #111318;
+
+          font-size: clamp(4.2rem, 7vw, 7.4rem);
+          font-weight: 600;
+
+          line-height: .88;
+          letter-spacing: -.072em;
+        }
+
+        .engix-home-hero-lead {
+          max-width: 700px;
+
+          margin: 38px 0 0;
+
+          color: #45474e;
+
+          font-size: clamp(1.12rem, 1.5vw, 1.35rem);
+          font-weight: 500;
+
+          line-height: 1.68;
+        }
+
+        .engix-home-hero-secondary {
           max-width: 680px;
-          color: #64748b;
-          font-size: 1.05rem;
-          line-height: 1.9;
+
+          margin: 17px 0 0;
+
+          color: #6b6d74;
+
+          font-size: 15px;
+          line-height: 1.78;
         }
 
         .engix-home-hero-actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 28px;
+
+          gap: 13px;
+
+          margin-top: 38px;
         }
 
-        .engix-home-btn-primary,
-        .engix-home-btn-secondary {
+        .engix-home-primary-btn,
+        .engix-home-secondary-btn {
+          min-height: 57px;
+
+          padding: 0 22px;
+
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-height: 52px;
-          padding: 0 22px;
-          border-radius: 999px;
+
+          gap: 9px;
+
           text-decoration: none;
-          font-size: 0.95rem;
-          font-weight: 600;
-          transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+          font-size: 14px;
+          font-weight: 700;
+
+          transition:
+            transform .2s ease,
+            background .2s ease;
         }
 
-        .engix-home-btn-primary {
-          background: #0f172a;
+        .engix-home-primary-btn {
+          background: #050505;
           color: #ffffff;
         }
 
-        .engix-home-btn-primary:hover {
-          background: #1e293b;
-          transform: translateY(-1px);
+        .engix-home-primary-btn svg {
+          color: #fff14f;
         }
 
-        .engix-home-btn-secondary {
+        .engix-home-secondary-btn {
           background: #ffffff;
-          color: #0f172a;
-          border: 1px solid rgba(15, 23, 42, 0.08);
+
+          border: 1px solid rgba(5,5,5,.16);
+
+          color: #050505;
         }
 
-        .engix-home-btn-secondary:hover {
-          transform: translateY(-1px);
-          border-color: rgba(15, 23, 42, 0.14);
+        .engix-home-primary-btn:hover,
+        .engix-home-secondary-btn:hover {
+          transform: translateY(-2px);
         }
 
-        .engix-home-hero-card {
-          background: #ffffff;
-          border: 1px solid rgba(15, 23, 42, 0.08);
-          border-radius: 30px;
-          box-shadow: 0 16px 50px rgba(15, 23, 42, 0.05);
-          padding: 30px;
+        .engix-home-secondary-btn:hover {
+          background: #f7f7f7;
         }
 
-        .engix-home-label {
-          display: inline-block;
-          margin-bottom: 10px;
-          color: #94a3b8;
-          font-size: 0.82rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
+        .engix-home-hero-trust {
+          display: flex;
+          flex-wrap: wrap;
+
+          gap: 14px 22px;
+
+          margin-top: 38px;
         }
 
-        .engix-home-hero-card h3 {
-          margin: 0 0 20px;
-          color: #0f172a;
-          font-size: 1.8rem;
-          line-height: 1.18;
-          letter-spacing: -0.03em;
+        .engix-home-hero-trust > div {
+          display: flex;
+          align-items: center;
+
+          gap: 8px;
+
+          color: #64666c;
+
+          font-size: 12px;
         }
 
-        .engix-home-mini-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
+        .engix-home-hero-trust svg {
+          color: #111318;
         }
 
-        .engix-home-mini-grid div {
-          padding: 18px;
-          border-radius: 20px;
-          background: #f8fafc;
-          border: 1px solid rgba(15, 23, 42, 0.06);
+        .engix-home-hero-visual {
+          min-height: 720px;
+
+          position: relative;
+
+          overflow: hidden;
+
+          background: #ececec;
         }
 
-        .engix-home-mini-grid strong {
+        .engix-home-hero-visual > img {
+          width: 100%;
+          height: 720px;
+
+          object-fit: cover;
+
           display: block;
-          margin-bottom: 6px;
-          color: #0f172a;
-          font-size: 1.2rem;
+
+          transition: transform .7s ease;
         }
 
-        .engix-home-mini-grid span {
-          color: #64748b;
-          font-size: 0.92rem;
-          line-height: 1.6;
+        .engix-home-hero-visual:hover > img {
+          transform: scale(1.025);
         }
 
-        @media (max-width: 960px) {
+        .engix-home-hero-visual::after {
+          content: '';
+
+          position: absolute;
+          inset: 0;
+
+          background:
+            linear-gradient(
+              180deg,
+              transparent 42%,
+              rgba(5,5,5,.74)
+            );
+        }
+
+        .engix-home-hero-overlay {
+          position: absolute;
+
+          z-index: 2;
+
+          left: 32px;
+          bottom: 35px;
+
+          color: white;
+        }
+
+        .engix-home-hero-overlay span {
+          display: inline-block;
+
+          margin-bottom: 10px;
+          padding: 5px 8px;
+
+          background: #fff14f;
+          color: #050505;
+
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: .1em;
+        }
+
+        .engix-home-hero-overlay strong {
+          display: block;
+
+          font-size: clamp(2rem, 3vw, 3rem);
+
+          line-height: 1.02;
+          letter-spacing: -.045em;
+        }
+
+        .engix-home-hero-floating-card {
+          position: absolute;
+
+          z-index: 3;
+
+          top: 26px;
+          right: 26px;
+
+          width: 230px;
+
+          padding: 20px;
+
+          background: rgba(255,255,255,.95);
+
+          backdrop-filter: blur(10px);
+        }
+
+        .engix-home-hero-floating-card small {
+          color: #85868b;
+
+          font-size: 8px;
+          font-weight: 800;
+
+          letter-spacing: .1em;
+        }
+
+        .engix-home-hero-floating-card > div {
+          display: flex;
+          flex-wrap: wrap;
+
+          gap: 6px;
+
+          margin-top: 15px;
+        }
+
+        .engix-home-hero-floating-card span {
+          padding: 7px 9px;
+
+          border: 1px solid rgba(5,5,5,.1);
+
+          color: #33353a;
+
+          font-size: 10px;
+        }
+
+        .engix-home-hero-floating-card span:nth-child(1) {
+          background: #e9e6ff;
+        }
+
+        .engix-home-hero-floating-card span:nth-child(2) {
+          background: #fff14f;
+        }
+
+        .engix-home-hero-floating-card span:nth-child(3) {
+          background: #dff5df;
+        }
+
+        .engix-home-hero-floating-card span:nth-child(4) {
+          background: #f4dfd2;
+        }
+
+
+        @media(max-width:1000px) {
+
           .engix-home-hero-grid {
             grid-template-columns: 1fr;
           }
+
+          .engix-home-hero-copy {
+            padding-bottom: 40px;
+          }
+
+          .engix-home-hero-visual,
+          .engix-home-hero-visual > img {
+            min-height: 560px;
+            height: 560px;
+          }
+
         }
 
-        @media (max-width: 640px) {
+
+        @media(max-width:650px) {
+
+          .engix-home-shell {
+            width: calc(100% - 32px);
+          }
+
           .engix-home-hero {
-            padding: 52px 16px 24px;
+            padding-top: 40px;
           }
 
-          .engix-home-hero-card {
-            border-radius: 22px;
-            padding: 22px;
+          .engix-home-hero-copy {
+            padding: 45px 0 55px;
           }
 
-          .engix-home-mini-grid {
-            grid-template-columns: 1fr;
+          .engix-home-hero h1 {
+            font-size: clamp(3.7rem,17vw,5.5rem);
           }
+
+          .engix-home-hero-actions {
+            flex-direction: column;
+          }
+
+          .engix-home-primary-btn,
+          .engix-home-secondary-btn {
+            width: 100%;
+          }
+
+          .engix-home-hero-trust {
+            flex-direction: column;
+          }
+
+          .engix-home-hero-visual,
+          .engix-home-hero-visual > img {
+            min-height: 430px;
+            height: 430px;
+          }
+
+          .engix-home-hero-floating-card {
+            display: none;
+          }
+
+          .engix-home-hero-overlay {
+            left: 20px;
+            right: 20px;
+            bottom: 22px;
+          }
+
         }
+
       `}</style>
     </>
   );
