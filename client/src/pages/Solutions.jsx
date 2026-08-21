@@ -1,791 +1,1175 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
+  ArrowDown,
   ArrowRight,
   ArrowUpRight,
-  BrainCircuit,
-  BriefcaseBusiness,
+  BarChart3,
   Check,
   CheckCircle2,
   ChevronDown,
-  CloudCog,
   Code2,
-  Database,
   Globe2,
-  LayoutDashboard,
+  LockKeyhole,
   Mail,
   MapPin,
+  Megaphone,
   MessageCircle,
-  Palette,
   Phone,
-  Rocket,
-  ServerCog,
-  ShieldCheck,
-  Smartphone,
-  Target,
-  Workflow,
-  Wrench
+  Search,
+  Sparkles,
+  TrendingUp,
+  Users
 } from 'lucide-react';
 
-import ContactForm from '../components/contact/ContactForm';
+import api from '../api/axios';
 import usePageTitle from '../hooks/usePageTitle';
 
+
+/* =========================================================
+   FORM STATE
+========================================================= */
+
+const initialForm = {
+  firstName: '',
+  lastName: '',
+  company: '',
+  email: '',
+  phone: '',
+  service: '',
+  budget: '',
+  message: '',
+  consent: false
+};
+
+
+/* =========================================================
+   SERVICES
+========================================================= */
+
+const services = [
+  {
+    icon: Search,
+    title: 'SEO',
+    description:
+      'Rank on Google and get found by customers already searching for you.',
+    details: [
+      'Search visibility',
+      'Technical SEO',
+      'On-page optimization',
+      'Local SEO'
+    ]
+  },
+
+  {
+    icon: BarChart3,
+    title: 'Paid ads (Meta / Google)',
+    description:
+      'Drive targeted leads fast with ad campaigns that pay for themselves.',
+    details: [
+      'Google Search Ads',
+      'Meta Ads',
+      'Campaign optimization',
+      'Conversion tracking'
+    ]
+  },
+
+  {
+    icon: Megaphone,
+    title: 'Social media',
+    description:
+      'Consistent content, community management, and brand presence.',
+    details: [
+      'Content strategy',
+      'Creative planning',
+      'Campaign support',
+      'Audience engagement'
+    ]
+  },
+
+  {
+    icon: Code2,
+    title: 'Website Development',
+    description:
+      'High-converting landing pages & professional websites built to turn visitors into paying clients.',
+    details: [
+      'Business websites',
+      'High-converting landing pages',
+      'Responsive development',
+      'Conversion-focused UX'
+    ]
+  }
+];
+
+
+/* =========================================================
+   PROCESS
+========================================================= */
+
+const process = [
+  {
+    number: '1',
+    title: 'Free audit call',
+    description:
+      'We review your current digital presence and find growth gaps — no cost, no obligation.'
+  },
+
+  {
+    number: '2',
+    title: 'Custom strategy',
+    description:
+      'A plan built for your business, budget, and target customers. Not a template.'
+  },
+
+  {
+    number: '3',
+    title: 'Launch & execute',
+    description:
+      'We handle everything — ads, content, SEO — so you can focus on running your business.'
+  },
+
+  {
+    number: '4',
+    title: 'Report & scale',
+    description:
+      'Weekly reports, monthly reviews, and continuous optimization to grow your results.'
+  }
+];
+
+
+/* =========================================================
+   CLIENT RESULTS
+========================================================= */
+
+const results = [
+  {
+    location: 'Durham, United Kingdom',
+    company: 'Spinnovate Limited',
+    title:
+      'Professional digital platforms for an international technology business.',
+    description:
+      'Engix supported the development of multiple technology-focused websites and digital experiences, helping present complex scientific and technical businesses through clear, professional and modern web platforms.',
+    tags: [
+      'Website Development',
+      'UI/UX',
+      'Digital Presence'
+    ]
+  },
+
+  {
+    location: 'Singapore',
+    company: 'International AI Engagement',
+    title:
+      'AI chatbot and intelligent interviewing experiences.',
+    description:
+      'Our team worked on conversational AI experiences and AI-supported interviewing workflows designed around practical business use cases and modern customer interaction.',
+    tags: [
+      'Artificial Intelligence',
+      'Automation',
+      'Product Engineering'
+    ]
+  },
+
+  {
+    location: 'India',
+    company: 'Mr Maintenance',
+    title:
+      'A complete digital service-booking ecosystem.',
+    description:
+      'The platform connects customers, administrators and field technicians through booking, assignment, OTP verification, payments and customer feedback workflows.',
+    tags: [
+      'Mobile Application',
+      'Backend',
+      'Digital Platform'
+    ]
+  }
+];
+
+
+/* =========================================================
+   FAQs
+========================================================= */
+
+const faqs = [
+  {
+    question: 'How soon will I see results?',
+    answer:
+      'Results depend on your existing digital presence, competition, advertising budget and selected channels. Our initial optimization approach is generally structured around a 60–90 day period so campaigns can collect meaningful data and improve systematically.'
+  },
+
+  {
+    question: 'What is the minimum budget needed?',
+    answer:
+      'There is no single budget suitable for every business. We first understand your objectives, market and customer acquisition goals, then recommend an appropriate strategy and budget.'
+  },
+
+  {
+    question: 'Do I need to sign a long contract?',
+    answer:
+      'Engagement terms depend on the scope of work. We explain the recommended strategy, deliverables and commercial structure clearly before an engagement begins.'
+  },
+
+  {
+    question: 'What industries do you work with?',
+    answer:
+      'Engix can support startups, SMEs, professional service businesses, technology companies and established organizations looking to improve their digital presence and customer acquisition.'
+  },
+
+  {
+    question: 'Can Engix handle both marketing and website development?',
+    answer:
+      'Yes. Engix combines digital marketing with website, landing-page and software development capabilities so campaigns and customer experiences can work together.'
+  }
+];
+
+
+/* =========================================================
+   REUSABLE ENQUIRY FORM
+   SAME API FLOW AS CONTACT FORM
+========================================================= */
+
+function EnquiryForm({
+  source = 'Solutions Landing Page',
+  title = 'Enquire now for free consultation',
+  description =
+    'Tell us about your business, current marketing and what you would like to improve.'
+}) {
+  const [form, setForm] = useState(initialForm);
+
+  const [loading, setLoading] = useState(false);
+
+  const [status, setStatus] = useState({
+    type: '',
+    message: ''
+  });
+
+
+  const handleChange = (event) => {
+    const {
+      name,
+      value,
+      type,
+      checked
+    } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]:
+        type === 'checkbox'
+          ? checked
+          : value
+    }));
+  };
+
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (loading) {
+      return;
+    }
+
+    setStatus({
+      type: '',
+      message: ''
+    });
+
+
+    if (
+      !form.firstName ||
+      !form.lastName ||
+      !form.company ||
+      !form.email ||
+      !form.phone ||
+      !form.service ||
+      !form.message
+    ) {
+      setStatus({
+        type: 'error',
+        message:
+          'Please complete all required fields before submitting your enquiry.'
+      });
+
+      return;
+    }
+
+
+    if (!form.consent) {
+      setStatus({
+        type: 'error',
+        message:
+          'Please confirm that Engix may use your information to respond to your enquiry.'
+      });
+
+      return;
+    }
+
+
+    setLoading(true);
+
+
+    try {
+      const fullName =
+        `${form.firstName} ${form.lastName}`.trim();
+
+
+      /*
+        SAME PAYLOAD STRUCTURE USED BY
+        THE WORKING ENGIX CONTACT FORM
+      */
+
+      const payload = {
+        name: fullName,
+
+        firstName: form.firstName,
+        lastName: form.lastName,
+
+        email: form.email,
+        phone: form.phone,
+
+        company: form.company,
+
+        role: '',
+        country: '',
+
+        inquiryType:
+          'New Project / Business Opportunity',
+
+        service: form.service,
+
+        budget: form.budget,
+
+        timeline:
+          'To be discussed',
+
+        message: form.message,
+
+        source,
+
+        page:
+          '/solutions'
+      };
+
+
+      console.log(
+        'Submitting Engix Solutions enquiry:',
+        payload
+      );
+
+
+      const response =
+        await api.post(
+          '/leads',
+          payload
+        );
+
+
+      console.log(
+        'Engix enquiry response:',
+        response.data
+      );
+
+
+      setStatus({
+        type: 'success',
+
+        message:
+          response?.data?.message ||
+          'Thank you. Your enquiry has been received successfully. Our team will contact you shortly.'
+      });
+
+
+      /*
+        READY FOR GOOGLE TAG MANAGER /
+        GOOGLE ADS LEAD CONVERSION
+      */
+
+      if (
+        typeof window !==
+        'undefined'
+      ) {
+        window.dataLayer =
+          window.dataLayer || [];
+
+        window.dataLayer.push({
+          event:
+            'generate_lead',
+
+          lead_source:
+            source,
+
+          service:
+            form.service
+        });
+      }
+
+
+      setForm(initialForm);
+
+    } catch (error) {
+      console.error(
+        'ENGIX SOLUTIONS FORM ERROR:',
+        error
+      );
+
+      console.error(
+        'Backend response:',
+        error?.response?.data
+      );
+
+      console.error(
+        'Status:',
+        error?.response?.status
+      );
+
+
+      setStatus({
+        type: 'error',
+
+        message:
+          error?.response?.data?.message ||
+          'We could not send your enquiry. Please try again or contact Engix by phone, WhatsApp or email.'
+      });
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  return (
+    <div className="engix-lead-card">
+
+      <div className="engix-lead-heading">
+
+        <span>
+          GET STARTED
+        </span>
+
+        <h2>
+          {title}
+        </h2>
+
+        <p>
+          {description}
+        </p>
+
+      </div>
+
+
+      <form
+        className="engix-lead-form"
+        onSubmit={handleSubmit}
+      >
+
+        <div className="engix-lead-row">
+
+          <div className="engix-lead-field">
+
+            <label>
+              First name *
+            </label>
+
+            <input
+              type="text"
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              placeholder="First name"
+              autoComplete="given-name"
+              required
+            />
+
+          </div>
+
+
+          <div className="engix-lead-field">
+
+            <label>
+              Last name *
+            </label>
+
+            <input
+              type="text"
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              placeholder="Last name"
+              autoComplete="family-name"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div className="engix-lead-field">
+
+          <label>
+            Business name *
+          </label>
+
+          <input
+            type="text"
+            name="company"
+            value={form.company}
+            onChange={handleChange}
+            placeholder="Your business / company"
+            autoComplete="organization"
+            required
+          />
+
+        </div>
+
+
+        <div className="engix-lead-row">
+
+          <div className="engix-lead-field">
+
+            <label>
+              Business email *
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@company.com"
+              autoComplete="email"
+              required
+            />
+
+          </div>
+
+
+          <div className="engix-lead-field">
+
+            <label>
+              WhatsApp number *
+            </label>
+
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="+91 98765 43210"
+              autoComplete="tel"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div className="engix-lead-field">
+
+          <label>
+            What do you need help with? *
+          </label>
+
+          <select
+            name="service"
+            value={form.service}
+            onChange={handleChange}
+            required
+          >
+
+            <option value="">
+              Select a service
+            </option>
+
+            <option value="SEO">
+              Search Engine Optimization
+            </option>
+
+            <option value="Google Ads">
+              Google Ads
+            </option>
+
+            <option value="Meta Ads">
+              Meta Ads
+            </option>
+
+            <option value="Social Media Marketing">
+              Social Media Marketing
+            </option>
+
+            <option value="Website Development">
+              Website Development
+            </option>
+
+            <option value="Landing Page Development">
+              High-Converting Landing Page
+            </option>
+
+            <option value="Complete Digital Marketing">
+              Complete Digital Marketing
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div className="engix-lead-field">
+
+          <label>
+            Monthly budget
+          </label>
+
+          <select
+            name="budget"
+            value={form.budget}
+            onChange={handleChange}
+          >
+
+            <option value="">
+              Select a range
+            </option>
+
+            <option value="Under ₹25,000">
+              Under ₹25,000
+            </option>
+
+            <option value="₹25,000 - ₹50,000">
+              ₹25,000 – ₹50,000
+            </option>
+
+            <option value="₹50,000 - ₹1,00,000">
+              ₹50,000 – ₹1,00,000
+            </option>
+
+            <option value="₹1,00,000+">
+              ₹1,00,000+
+            </option>
+
+            <option value="Need Guidance">
+              Need guidance
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div className="engix-lead-field">
+
+          <label>
+            What's your biggest challenge? *
+          </label>
+
+          <textarea
+            name="message"
+            value={form.message}
+            onChange={handleChange}
+            rows="4"
+            maxLength="2000"
+            placeholder="Not enough leads from Google..."
+            required
+          />
+
+        </div>
+
+
+        <label className="engix-lead-consent">
+
+          <input
+            type="checkbox"
+            name="consent"
+            checked={form.consent}
+            onChange={handleChange}
+          />
+
+          <span>
+            I agree that Engix Tech Private Limited
+            may use the information submitted here
+            to respond to my enquiry and related
+            business communication.
+          </span>
+
+        </label>
+
+
+        {status.message && (
+          <div
+            className={`engix-lead-status ${status.type}`}
+          >
+
+            {status.type ===
+              'success' && (
+              <CheckCircle2
+                size={22}
+              />
+            )}
+
+            <span>
+              {status.message}
+            </span>
+
+          </div>
+        )}
+
+
+        <button
+          type="submit"
+          className="engix-lead-submit"
+          disabled={loading}
+        >
+
+          {loading
+            ? 'Sending enquiry...'
+            : 'Enquire now for free consultation'
+          }
+
+          {!loading && (
+            <ArrowRight
+              size={22}
+            />
+          )}
+
+        </button>
+
+
+        <div className="engix-lead-private">
+
+          <LockKeyhole
+            size={18}
+          />
+
+          <span>
+            We never share your information.
+            No spam.
+          </span>
+
+        </div>
+
+      </form>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
 export default function Solutions() {
-  usePageTitle('Technology Solutions');
+  usePageTitle(
+    'Digital Marketing & Growth Solutions'
+  );
 
-  const services = [
-    {
-      number: '01',
-      id: 'web-development',
-      icon: Globe2,
-      eyebrow: 'WEB DEVELOPMENT',
-      title:
-        'Professional websites and web applications built for business growth.',
-      description:
-        'Engix designs and develops modern corporate websites, digital platforms and web applications focused on credibility, performance, user experience and long-term maintainability.',
-      points: [
-        'Corporate & business websites',
-        'Custom web applications',
-        'Responsive frontend development',
-        'E-commerce platforms',
-        'Customer & business portals',
-        'Website redesign & modernization'
-      ],
-      tone: 'lavender'
-    },
-
-    {
-      number: '02',
-      id: 'app-development',
-      icon: Smartphone,
-      eyebrow: 'MOBILE APP DEVELOPMENT',
-      title:
-        'Mobile applications designed around real customer and operational workflows.',
-      description:
-        'We develop modern mobile applications for businesses that need reliable customer experiences, internal applications and digital services connected with secure backend systems.',
-      points: [
-        'Android applications',
-        'iOS applications',
-        'Cross-platform development',
-        'Customer-facing apps',
-        'Internal business applications',
-        'App maintenance & upgrades'
-      ],
-      tone: 'mint'
-    },
-
-    {
-      number: '03',
-      id: 'software-development',
-      icon: Code2,
-      eyebrow: 'CUSTOM SOFTWARE DEVELOPMENT',
-      title:
-        'Software engineered around the way your organization actually works.',
-      description:
-        'From internal systems and operational tools to SaaS products and enterprise applications, we create software around real business requirements instead of forcing companies into generic solutions.',
-      points: [
-        'Custom business software',
-        'SaaS product development',
-        'Internal management platforms',
-        'Operational dashboards',
-        'Enterprise applications',
-        'Workflow-driven software'
-      ],
-      tone: 'yellow'
-    },
-
-    {
-      number: '04',
-      id: 'ai-solutions',
-      icon: BrainCircuit,
-      eyebrow: 'AI & AUTOMATION',
-      title:
-        'Practical artificial intelligence for customer experiences and business operations.',
-      description:
-        'Engix helps organizations introduce AI where it can create practical value through conversational products, intelligent assistants, automated workflows and AI-enabled software.',
-      points: [
-        'AI chatbot development',
-        'AI interviewer solutions',
-        'AI assistants',
-        'Generative AI integration',
-        'Business automation',
-        'Custom AI applications'
-      ],
-      tone: 'peach'
-    },
-
-    {
-      number: '05',
-      id: 'backend-development',
-      icon: ServerCog,
-      eyebrow: 'BACKEND & API ENGINEERING',
-      title:
-        'Secure backend systems that keep modern applications connected.',
-      description:
-        'We develop APIs, authentication systems, server-side applications and integrations that connect products, users, databases, payments and third-party services.',
-      points: [
-        'REST API development',
-        'Authentication & authorization',
-        'Third-party API integration',
-        'Payment integrations',
-        'Server-side applications',
-        'Scalable backend architecture'
-      ],
-      tone: 'lavender'
-    },
-
-    {
-      number: '06',
-      id: 'database-engineering',
-      icon: Database,
-      eyebrow: 'DATABASE ENGINEERING',
-      title:
-        'Reliable data architecture for applications that need to grow.',
-      description:
-        'We design and manage database systems that support digital products, customer platforms, reporting systems and business applications while maintaining consistency and performance.',
-      points: [
-        'Database architecture',
-        'MongoDB',
-        'PostgreSQL',
-        'MySQL',
-        'Schema design',
-        'Database optimization & management'
-      ],
-      tone: 'yellow'
-    },
-
-    {
-      number: '07',
-      id: 'cloud-devops',
-      icon: CloudCog,
-      eyebrow: 'CLOUD & DEVOPS',
-      title:
-        'Infrastructure and deployment systems designed for dependable production.',
-      description:
-        'Engix supports cloud deployment, CI/CD, web infrastructure and production environments so applications can be released reliably and improved safely.',
-      points: [
-        'Cloud deployment',
-        'DigitalOcean infrastructure',
-        'Docker environments',
-        'CI/CD pipelines',
-        'Nginx & reverse proxy',
-        'Monitoring & production support'
-      ],
-      tone: 'mint'
-    },
-
-    {
-      number: '08',
-      id: 'ui-ux',
-      icon: Palette,
-      eyebrow: 'UI/UX & PRODUCT DESIGN',
-      title:
-        'Digital experiences built around clarity, usability and business goals.',
-      description:
-        'We transform requirements and complex workflows into professional interfaces that are easier for customers, teams and administrators to understand and use.',
-      points: [
-        'UI/UX design',
-        'Product discovery',
-        'User journeys',
-        'Wireframes & prototypes',
-        'Design systems',
-        'Responsive interface design'
-      ],
-      tone: 'peach'
-    },
-
-    {
-      number: '09',
-      id: 'crm-erp',
-      icon: LayoutDashboard,
-      eyebrow: 'CRM & ERP SOLUTIONS',
-      title:
-        'Business platforms connecting teams, customers and operational information.',
-      description:
-        'We create customized CRM, ERP and administration systems for organizations that need clearer workflows, centralized information and more efficient business operations.',
-      points: [
-        'Custom CRM solutions',
-        'ERP modules',
-        'Administration dashboards',
-        'Role-based access',
-        'Business reporting',
-        'Workflow management'
-      ],
-      tone: 'lavender'
-    },
-
-    {
-      number: '10',
-      id: 'business-automation',
-      icon: Workflow,
-      eyebrow: 'BUSINESS AUTOMATION',
-      title:
-        'Replace repetitive manual work with connected digital workflows.',
-      description:
-        'Engix helps organizations reduce dependency on spreadsheets, disconnected tools and repetitive processes by creating structured and automated digital workflows.',
-      points: [
-        'Workflow automation',
-        'Process digitization',
-        'System integrations',
-        'Notifications',
-        'Approval workflows',
-        'Operational automation'
-      ],
-      tone: 'yellow'
-    },
-
-    {
-      number: '11',
-      id: 'maintenance-support',
-      icon: Wrench,
-      eyebrow: 'MAINTENANCE & SUPPORT',
-      title:
-        'Technology support that continues after your product goes live.',
-      description:
-        'A digital product continues evolving after launch. We provide maintenance, technical upgrades, improvements and continued development based on the needs of the product.',
-      points: [
-        'Application maintenance',
-        'Bug fixes',
-        'Performance improvements',
-        'Security updates',
-        'Feature development',
-        'Ongoing technical support'
-      ],
-      tone: 'mint'
-    },
-
-    {
-      number: '12',
-      id: 'digital-transformation',
-      icon: Rocket,
-      eyebrow: 'DIGITAL TRANSFORMATION',
-      title:
-        'Modern technology for organizations ready to improve how they operate.',
-      description:
-        'We help businesses move away from outdated processes and disconnected systems through modern software, automation, cloud technology and digital product engineering.',
-      points: [
-        'Business digitization',
-        'Legacy modernization',
-        'Process redesign',
-        'Automation strategy',
-        'Cloud adoption',
-        'Technology consulting'
-      ],
-      tone: 'peach'
-    }
-  ];
-
-  const projects = [
-    {
-      number: '01',
-      location: 'Durham, United Kingdom',
-      title: 'International technology web ecosystem',
-      description:
-        'Corporate digital platforms developed for Spinnovate Limited and its technology-focused businesses, translating complex scientific and technical information into professional web experiences.',
-      tags: [
-        'Corporate Web',
-        'UI/UX',
-        'Frontend Engineering',
-        'Deployment'
-      ]
-    },
-
-    {
-      number: '02',
-      location: 'Singapore',
-      title: 'AI conversational & interview solutions',
-      description:
-        'AI-focused development involving intelligent chatbot experiences and an AI-supported interviewing solution for an international technology engagement.',
-      tags: [
-        'Artificial Intelligence',
-        'Chatbots',
-        'AI Interviewer',
-        'Product Engineering'
-      ]
-    },
-
-    {
-      number: '03',
-      location: 'India',
-      title: 'Mr Maintenance service platform',
-      description:
-        'A service-booking ecosystem connecting customers, administrators and field technicians through scheduling, assignment, verification, payments and customer feedback workflows.',
-      tags: [
-        'Mobile App',
-        'Backend',
-        'OTP',
-        'Admin Platform',
-        'Payments'
-      ]
-    }
-  ];
-
-  const reasons = [
-    {
-      icon: Target,
-      title: 'Business-first thinking',
-      description:
-        'We begin with the problem, users and business outcome before deciding what technology should be developed.'
-    },
-    {
-      icon: Workflow,
-      title: 'Connected delivery',
-      description:
-        'Strategy, UI/UX, frontend, backend, mobile, AI and infrastructure remain part of one delivery workflow.'
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Long-term engineering',
-      description:
-        'Maintainability, reliability, security and future expansion are considered from architecture through production.'
-    },
-    {
-      icon: BriefcaseBusiness,
-      title: 'Professional communication',
-      description:
-        'Priorities, decisions and progress remain visible so stakeholders understand where the project stands.'
-    }
-  ];
-
-  const process = [
-    {
-      number: '01',
-      title: 'Understand',
-      description:
-        'We understand the business, users, processes and outcome the technology needs to support.'
-    },
-    {
-      number: '02',
-      title: 'Define',
-      description:
-        'We shape scope, priorities, user journeys and the appropriate technical architecture.'
-    },
-    {
-      number: '03',
-      title: 'Design',
-      description:
-        'Interfaces and experiences are designed around usability and real workflows.'
-    },
-    {
-      number: '04',
-      title: 'Engineer',
-      description:
-        'Frontend, backend, mobile, database, cloud and AI components are developed.'
-    },
-    {
-      number: '05',
-      title: 'Validate',
-      description:
-        'Testing and product reviews confirm reliability, usability and production readiness.'
-    },
-    {
-      number: '06',
-      title: 'Launch & Evolve',
-      description:
-        'We support deployment, improvements and continued product development.'
-    }
-  ];
-
-  const faqs = [
-    {
-      question: 'What services does Engix provide?',
-      answer:
-        'Engix provides web development, mobile app development, custom software, AI and automation, backend engineering, database development, cloud and DevOps, UI/UX, CRM and ERP development, business automation, maintenance and broader digital transformation services.'
-    },
-    {
-      question: 'Can Engix work with international clients?',
-      answer:
-        'Yes. Engix has experience supporting international technology engagements and uses structured remote collaboration, documentation and project communication.'
-    },
-    {
-      question: 'Can you help if we only have an idea?',
-      answer:
-        'Yes. You do not need to arrive with a completed technical specification. We can begin with the business problem and help structure the product requirements and technical direction.'
-    },
-    {
-      question: 'Can Engix develop both frontend and backend?',
-      answer:
-        'Yes. Engix supports complete application development covering interface design, frontend applications, backend APIs, databases, authentication, integrations, cloud deployment and production infrastructure.'
-    },
-    {
-      question: 'Do you provide maintenance after launch?',
-      answer:
-        'Yes. Depending on the engagement, we can provide maintenance, improvements, production support and continued product development after launch.'
-    },
-    {
-      question: 'How can we start a project?',
-      answer:
-        'Send a short description of what you are trying to build or improve using the enquiry form. We can begin with an initial discussion and determine the most practical next step.'
-    }
-  ];
 
   return (
     <>
-      <main className="engix-solutions-page">
+
+      <main className="engix-ads-page">
+
 
         {/* =====================================================
-            LANDING PAGE HEADER
+            HEADER
         ====================================================== */}
 
-        <header className="engix-solutions-header">
-          <div className="engix-solutions-shell engix-solutions-header-inner">
+        <header className="engix-ads-header">
+
+          <div className="engix-ads-shell engix-ads-header-inner">
 
             <Link
               to="/"
-              className="engix-solutions-logo"
+              className="engix-ads-logo"
             >
-              <span>✣</span>
+            <span className="engix-navbar-logo-icon">
+  <img
+    src="/logo.png"
+    alt="Engix logo"
+    className="engix-navbar-logo-image"
+  />
+</span>
 
               <strong>
                 Engix
               </strong>
             </Link>
 
-            <nav className="engix-solutions-nav">
+
+            <nav className="engix-ads-nav">
 
               <a href="#services">
-                Solutions
-              </a>
-
-              <a href="#work">
-                Work
-              </a>
-
-              <a href="#why-engix">
-                Why Engix
+                Services
               </a>
 
               <a href="#process">
-                Process
+                How it works
+              </a>
+
+              <a href="#results">
+                Client results
+              </a>
+
+              <a href="#faq">
+                FAQ
               </a>
 
             </nav>
 
+
             <a
-              href="#consultation"
-              className="engix-solutions-header-btn"
+              href="#hero-form"
+              className="engix-ads-header-button"
             >
               Free Consultation
 
               <ArrowUpRight
-                size={18}
-                strokeWidth={1.7}
+                size={20}
               />
             </a>
 
           </div>
+
         </header>
+
 
 
         {/* =====================================================
             HERO
         ====================================================== */}
 
-        <section className="engix-solutions-hero">
-          <div className="engix-solutions-shell">
+        <section className="engix-ads-hero">
 
-            <div className="engix-solutions-hero-grid">
+          <div className="engix-ads-shell">
 
-              <div className="engix-solutions-hero-copy">
+            <div className="engix-ads-hero-grid">
 
-                <span className="engix-solutions-label">
-                  ENGIX TECH PRIVATE LIMITED
-                </span>
+
+              {/* HERO LEFT */}
+
+              <div className="engix-ads-hero-copy">
+
+                <div className="engix-ads-audit-badge">
+
+                  <Sparkles
+                    size={21}
+                  />
+
+                  <span>
+                    Free audit — limited slots
+                  </span>
+
+                </div>
+
 
                 <h1>
-                  Technology built
-                  around your
-                  business.
+                  Grow your business with
+
+                  <span>
+                    {' '}results-driven{' '}
+                  </span>
+
+                  digital marketing
                 </h1>
 
-                <p className="engix-solutions-hero-lead">
-                  End-to-end digital product and technology engineering
-                  for businesses that need reliable software, modern
-                  applications, artificial intelligence and scalable
-                  digital infrastructure.
+
+                <p className="engix-ads-hero-description">
+                  We help local businesses get more leads,
+                  more calls, and more customers — with SEO,
+                  paid ads, social media that actually converts.
                 </p>
 
-                <p className="engix-solutions-hero-description">
-                  Engix brings product strategy, UI/UX, web and mobile
-                  development, custom software, AI, backend engineering,
-                  databases, cloud infrastructure and DevOps together
-                  through one structured delivery process.
-                </p>
 
-                <div className="engix-solutions-hero-buttons">
+                <div className="engix-ads-hero-buttons">
 
                   <a
-                    href="#consultation"
-                    className="engix-solutions-primary-btn"
+                    href="#hero-form"
+                    className="engix-ads-primary-button"
                   >
-                    Book a Free Consultation
+                    Get a free consultation 
 
-                    <ArrowRight
-                      size={21}
-                      strokeWidth={1.8}
+                    <ArrowDown
+                      size={23}
                     />
                   </a>
 
-                  <a
-                    href="#work"
-                    className="engix-solutions-secondary-btn"
-                  >
-                    View Selected Work
 
-                    <ArrowUpRight
-                      size={20}
-                      strokeWidth={1.8}
+                  <a
+                    href="#results"
+                    className="engix-ads-secondary-button"
+                  >
+                    See our work
+
+                    <ArrowRight
+                      size={21}
                     />
                   </a>
 
                 </div>
 
 
-                <div className="engix-solutions-hero-trust">
+                <div className="engix-ads-hero-points">
 
                   <div>
-                    <CheckCircle2 size={20} />
-                    <span>International project experience</span>
+                    <Check size={22} />
+
+                    <span>
+                      No long-term contracts
+                    </span>
                   </div>
 
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Domestic technology delivery</span>
-                  </div>
 
                   <div>
-                    <CheckCircle2 size={20} />
-                    <span>End-to-end engineering</span>
+                    <Check size={22} />
+
+                    <span>
+                      Results in 60–90 days
+                    </span>
                   </div>
+
+
+                  <div>
+                    <Check size={22} />
+
+                    <span>
+                      100% transparent reporting
+                    </span>
+                  </div>
+
+                </div>
+
+
+                <div className="engix-ads-direct-contact">
+
+                  <a href="tel:+917355985134">
+                    <Phone size={22} />
+
+                    +91 7355985134
+                  </a>
+
+
+                  <a
+                    href="https://wa.me/917355985134"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle size={22} />
+
+                    WhatsApp us
+                  </a>
 
                 </div>
 
               </div>
 
 
-              <div className="engix-solutions-hero-image">
 
-                {/* UNIQUE TO SOLUTIONS PAGE */}
-                <img
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional software and technology workspace"
+              {/* HERO FORM */}
+
+              <div
+                id="hero-form"
+                className="engix-hero-form-wrap"
+              >
+
+                <EnquiryForm
+                  source="Solutions Hero Form"
+                  title="Enquire now for free consultation"
+                  description="Tell us about your business, current marketing and what you would like to improve."
                 />
-
-                <div className="engix-solutions-hero-overlay">
-
-                  <span>
-                    END-TO-END DELIVERY
-                  </span>
-
-                  <strong>
-                    Product.
-                    <br />
-                    Engineering.
-                    <br />
-                    Intelligence.
-                  </strong>
-
-                </div>
-
-
-                <div className="engix-solutions-hero-card">
-
-                  <small>
-                    CAPABILITIES
-                  </small>
-
-                  <div>
-                    <span>Web</span>
-                    <span>Apps</span>
-                    <span>Software</span>
-                    <span>AI</span>
-                    <span>Cloud</span>
-                  </div>
-
-                </div>
 
               </div>
 
             </div>
 
           </div>
+
         </section>
 
 
+
         {/* =====================================================
-            TRUST
+            CLIENT PROOF
         ====================================================== */}
 
-        <section className="engix-solutions-trust">
-          <div className="engix-solutions-shell engix-solutions-trust-grid">
+        <section className="engix-ads-proof">
 
-            <article>
-              <Globe2 size={29} />
+          <div className="engix-ads-shell">
 
-              <div>
+            <div className="engix-ads-proof-grid">
+
+              <article>
                 <strong>
-                  International Delivery
+                  51+
                 </strong>
 
                 <span>
-                  Experience supporting overseas technology engagements
+                  Clients served
                 </span>
-              </div>
-            </article>
+              </article>
 
 
-            <article>
-              <BriefcaseBusiness size={29} />
-
-              <div>
+              <article>
                 <strong>
-                  Business Focused
+                  India
                 </strong>
 
                 <span>
-                  Technology designed around real operational requirements
+                  Domestic delivery
                 </span>
-              </div>
-            </article>
+              </article>
 
 
-            <article>
-              <Workflow size={29} />
+              <article>
+                <strong>
+                  UK + Singapore
+                </strong>
 
-              <div>
+                <span>
+                  International experience
+                </span>
+              </article>
+
+
+              <article>
                 <strong>
                   End-to-End
                 </strong>
 
                 <span>
-                  Product, engineering, infrastructure and support
+                  Marketing + technology
                 </span>
-              </div>
-            </article>
+              </article>
 
-
-            <article>
-              <ShieldCheck size={29} />
-
-              <div>
-                <strong>
-                  Built for Growth
-                </strong>
-
-                <span>
-                  Maintainable technology with future development in mind
-                </span>
-              </div>
-            </article>
+            </div>
 
           </div>
+
         </section>
 
 
+
         {/* =====================================================
-            SERVICE INTRO
+            PROFESSIONAL IMAGE
         ====================================================== */}
 
-        <section
-          className="engix-solutions-services"
-          id="services"
-        >
+        <section className="engix-ads-intro-image">
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-heading-grid">
+            <div className="engix-ads-intro-image-wrap">
 
-              <div>
+              <img
+                src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1900&q=90"
+                alt="Professional business strategy meeting"
+              />
 
-                <span className="engix-solutions-label">
-                  TECHNOLOGY CAPABILITIES
+              <div className="engix-ads-intro-overlay">
+
+                <span>
+                  STRATEGY + EXECUTION
                 </span>
 
-                <h2>
-                  Complete technology
-                  capabilities under
-                  one engineering partner.
-                </h2>
+                <strong>
+                  Built around your
+                  business and your
+                  customers.
+                </strong>
 
               </div>
 
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        {/* =====================================================
+            SERVICES
+        ====================================================== */}
+
+        <section
+          className="engix-ads-services"
+          id="services"
+        >
+
+          <div className="engix-ads-shell">
+
+            <div className="engix-ads-heading">
+
+              <span>
+                WHAT WE DO
+              </span>
+
+              <h2>
+                Everything your brand needs
+                to grow online
+              </h2>
+
               <p>
-                From websites and mobile applications to custom software,
-                AI, databases, backend engineering, cloud infrastructure
-                and business automation, Engix provides the capabilities
-                required to design, build, deploy and support modern
-                digital systems.
+                Pick one service or let us build
+                the full stack for you.
               </p>
 
             </div>
 
 
-            <div className="engix-solutions-service-grid">
+            <div className="engix-ads-services-grid">
 
               {services.map((service) => {
-                const Icon = service.icon;
+                const Icon =
+                  service.icon;
 
                 return (
                   <article
-                    key={service.id}
-                    id={service.id}
-                    className={`engix-solutions-service service-${service.tone}`}
+                    key={service.title}
                   >
 
-                    <div className="engix-solutions-service-top">
-
-                      <span>
-                        {service.number}
-                      </span>
-
-                      <div>
-                        <Icon
-                          size={33}
-                          strokeWidth={1.5}
-                        />
-                      </div>
-
+                    <div className="engix-ads-service-icon">
+                      <Icon
+                        size={34}
+                        strokeWidth={1.8}
+                      />
                     </div>
 
-                    <span className="engix-solutions-service-category">
-                      {service.eyebrow}
-                    </span>
 
                     <h3>
                       {service.title}
                     </h3>
 
-                    <p>
+
+                    <p className="engix-service-description">
                       {service.description}
                     </p>
 
 
-                    <div className="engix-solutions-service-points">
+                    <div className="engix-ads-service-points">
 
-                      {service.points.map((point) => (
-                        <div key={point}>
+                      {service.details.map(
+                        (item) => (
+                          <span key={item}>
 
-                          <Check
-                            size={16}
-                            strokeWidth={2}
-                          />
+                            <Check
+                              size={20}
+                              strokeWidth={2}
+                            />
 
-                          <span>
-                            {point}
+                            {item}
+
                           </span>
-
-                        </div>
-                      ))}
+                        )
+                      )}
 
                     </div>
 
 
-                    <a href="#consultation">
-                      Discuss this service
+                    <a href="#bottom-enquiry">
+                      Enquire now
 
                       <ArrowUpRight
-                        size={17}
-                        strokeWidth={1.7}
+                        size={20}
                       />
                     </a>
 
@@ -796,405 +1180,99 @@ export default function Solutions() {
             </div>
 
           </div>
+
         </section>
 
 
+
         {/* =====================================================
-            TECHNOLOGY STACK
+            WEBSITE DEVELOPMENT
         ====================================================== */}
 
-        <section className="engix-solutions-stack">
+        <section className="engix-ads-web">
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-stack-grid">
+            <div className="engix-ads-web-grid">
 
-              <div>
+              <div className="engix-ads-web-image">
 
-                <span className="engix-solutions-label">
-                  TECHNOLOGY STACK
+                <img
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1900&q=90"
+                  alt="Professional analytics and digital performance dashboard"
+                />
+
+              </div>
+
+
+              <div className="engix-ads-web-copy">
+
+                <span>
+                  WEBSITE DEVELOPMENT
                 </span>
 
+
                 <h2>
-                  From interface
-                  to infrastructure.
+                  High-converting landing pages
+                  & websites
                 </h2>
 
+
                 <p>
-                  Our engineering capabilities cover the technical
-                  layers required to design, build and operate modern
-                  digital products.
+                  Your advertising can only perform
+                  as well as the experience customers
+                  reach after clicking an ad.
                 </p>
 
-              </div>
 
+                <p>
+                  Engix develops professional websites
+                  and high-converting landing pages
+                  designed around clear messaging,
+                  mobile usability, business credibility
+                  and conversion-focused customer journeys.
+                </p>
 
-              <div className="engix-solutions-stack-list">
-
-                <article>
-                  <span>FRONTEND</span>
-
-                  <div>
-                    <strong>React</strong>
-                    <strong>JavaScript</strong>
-                    <strong>Next.js</strong>
-                    <strong>HTML</strong>
-                    <strong>CSS</strong>
-                  </div>
-                </article>
-
-
-                <article>
-                  <span>MOBILE</span>
-
-                  <div>
-                    <strong>React Native</strong>
-                    <strong>Expo</strong>
-                    <strong>Android</strong>
-                    <strong>iOS</strong>
-                  </div>
-                </article>
-
-
-                <article>
-                  <span>BACKEND</span>
-
-                  <div>
-                    <strong>Node.js</strong>
-                    <strong>Express</strong>
-                    <strong>REST APIs</strong>
-                    <strong>Authentication</strong>
-                  </div>
-                </article>
-
-
-                <article>
-                  <span>DATABASE</span>
-
-                  <div>
-                    <strong>MongoDB</strong>
-                    <strong>PostgreSQL</strong>
-                    <strong>MySQL</strong>
-                  </div>
-                </article>
-
-
-                <article>
-                  <span>CLOUD & DEVOPS</span>
-
-                  <div>
-                    <strong>Docker</strong>
-                    <strong>DigitalOcean</strong>
-                    <strong>Nginx</strong>
-                    <strong>GitHub</strong>
-                    <strong>CI/CD</strong>
-                  </div>
-                </article>
-
-
-                <article>
-                  <span>AI</span>
-
-                  <div>
-                    <strong>AI Chatbots</strong>
-                    <strong>LLM Integration</strong>
-                    <strong>AI APIs</strong>
-                    <strong>Automation</strong>
-                  </div>
-                </article>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-
-        {/* =====================================================
-            PRODUCT THINKING
-        ====================================================== */}
-
-        <section className="engix-solutions-context">
-
-          <div className="engix-solutions-shell">
-
-            <div className="engix-solutions-context-grid">
-
-              <div className="engix-solutions-context-image">
-
-                {/* UNIQUE TO SOLUTIONS PAGE */}
-                <img
-                  src="https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional technology planning session"
-                />
 
                 <div>
 
                   <span>
-                    TECHNOLOGY WITH CONTEXT
+                    <CheckCircle2 size={23} />
+                    Mobile responsive
                   </span>
-
-                  <strong>
-                    Good development
-                    begins before
-                    the first line of code.
-                  </strong>
-
-                </div>
-
-              </div>
-
-
-              <div className="engix-solutions-context-copy">
-
-                <span className="engix-solutions-label">
-                  HOW WE THINK
-                </span>
-
-                <h2>
-                  We start with
-                  the problem,
-                  not the framework.
-                </h2>
-
-                <p>
-                  The technology itself is only part of a successful
-                  digital product. We first understand the business,
-                  users, operational requirements and expected outcome.
-                </p>
-
-                <p>
-                  That context helps us make better decisions around
-                  product scope, architecture, experience design,
-                  integrations and future development.
-                </p>
-
-
-                <div className="engix-solutions-context-points">
-
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Business and product discovery</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Clear technical direction</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Design and engineering working together</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Support through production and beyond</span>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-
-        {/* =====================================================
-            PROJECTS
-        ====================================================== */}
-
-        <section
-          className="engix-solutions-work"
-          id="work"
-        >
-
-          <div className="engix-solutions-shell">
-
-            <div className="engix-solutions-work-heading">
-
-              <span className="engix-solutions-label">
-                SELECTED EXPERIENCE
-              </span>
-
-              <h2>
-                Experience across
-                domestic and
-                international projects.
-              </h2>
-
-              <p>
-                Our work includes corporate technology platforms,
-                artificial intelligence and operational software.
-              </p>
-
-            </div>
-
-
-            <div className="engix-solutions-work-grid">
-
-              {projects.map((project) => (
-
-                <article key={project.number}>
-
-                  <div className="engix-solutions-work-top">
-
-                    <span>
-                      {project.number}
-                    </span>
-
-                    <Globe2
-                      size={26}
-                      strokeWidth={1.5}
-                    />
-
-                  </div>
-
-
-                  <span className="engix-solutions-work-location">
-                    {project.location}
-                  </span>
-
-                  <h3>
-                    {project.title}
-                  </h3>
-
-                  <p>
-                    {project.description}
-                  </p>
-
-
-                  <div className="engix-solutions-work-tags">
-
-                    {project.tags.map((tag) => (
-                      <span key={tag}>
-                        {tag}
-                      </span>
-                    ))}
-
-                  </div>
-
-                </article>
-
-              ))}
-
-            </div>
-
-
-            <Link
-              to="/portfolio"
-              className="engix-solutions-work-link"
-            >
-              Explore selected Engix projects
-
-              <ArrowUpRight size={18} />
-            </Link>
-
-          </div>
-        </section>
-
-
-        {/* =====================================================
-            WHY ENGIX
-        ====================================================== */}
-
-        <section
-          className="engix-solutions-why"
-          id="why-engix"
-        >
-
-          <div className="engix-solutions-shell">
-
-            <div className="engix-solutions-why-grid">
-
-              <div className="engix-solutions-why-copy">
-
-                <span className="engix-solutions-label">
-                  WHY ENGIX
-                </span>
-
-                <h2>
-                  More than
-                  development
-                  capacity.
-                </h2>
-
-                <p>
-                  We aim to operate as a technology partner that
-                  understands the product, business and operational
-                  context behind the software.
-                </p>
-
-
-                <div className="engix-solutions-reasons">
-
-                  {reasons.map((reason, index) => {
-                    const Icon = reason.icon;
-
-                    return (
-                      <article key={reason.title}>
-
-                        <div className={`reason-icon reason-${index + 1}`}>
-
-                          <Icon
-                            size={25}
-                            strokeWidth={1.6}
-                          />
-
-                        </div>
-
-                        <div>
-
-                          <h3>
-                            {reason.title}
-                          </h3>
-
-                          <p>
-                            {reason.description}
-                          </p>
-
-                        </div>
-
-                      </article>
-                    );
-                  })}
-
-                </div>
-
-              </div>
-
-
-              <div className="engix-solutions-why-image">
-
-                {/* UNIQUE TO SOLUTIONS PAGE */}
-                <img
-                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional software engineering team"
-                />
-
-                <div>
 
                   <span>
-                    PARTNERSHIP MINDSET
+                    <CheckCircle2 size={23} />
+                    Conversion focused
                   </span>
 
-                  <strong>
-                    Good software is
-                    created through
-                    good decisions.
-                  </strong>
+                  <span>
+                    <CheckCircle2 size={23} />
+                    Professional UI/UX
+                  </span>
+
+                  <span>
+                    <CheckCircle2 size={23} />
+                    Analytics ready
+                  </span>
 
                 </div>
+
+
+                <a href="#bottom-enquiry">
+                  Discuss your website
+
+                  <ArrowRight size={21} />
+                </a>
 
               </div>
 
             </div>
 
           </div>
+
         </section>
+
 
 
         {/* =====================================================
@@ -1202,130 +1280,369 @@ export default function Solutions() {
         ====================================================== */}
 
         <section
-          className="engix-solutions-process"
+          className="engix-ads-process"
           id="process"
         >
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-process-heading">
+            <div className="engix-ads-heading">
 
-              <span className="engix-solutions-label">
-                DELIVERY PROCESS
+              <span>
+                HOW IT WORKS
               </span>
 
               <h2>
-                Clear from the
-                first conversation
-                to production.
+                Start getting leads in
+                4 simple steps
               </h2>
-
-              <p>
-                Enough structure to keep development organized,
-                with enough flexibility to improve decisions as
-                the product becomes clearer.
-              </p>
 
             </div>
 
 
-            <div className="engix-solutions-process-grid">
+            <div className="engix-ads-process-list">
 
-              {process.map((step, index) => (
-
+              {process.map((step) => (
                 <article
                   key={step.number}
-                  className={`solution-process-${index + 1}`}
                 >
 
                   <span>
                     {step.number}
                   </span>
 
-                  <h3>
-                    {step.title}
-                  </h3>
 
-                  <p>
-                    {step.description}
-                  </p>
+                  <div>
+
+                    <h3>
+                      {step.title}
+                    </h3>
+
+                    <p>
+                      {step.description}
+                    </p>
+
+                  </div>
 
                 </article>
-
               ))}
 
             </div>
 
           </div>
+
         </section>
 
 
+
         {/* =====================================================
-            CONSULTATION
+            CLIENT RESULTS
         ====================================================== */}
 
         <section
-          className="engix-solutions-consultation"
-          id="consultation"
+          className="engix-ads-results"
+          id="results"
         >
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-consultation-grid">
+            <div className="engix-ads-heading">
 
-              <div className="engix-solutions-consultation-copy">
+              <span>
+                CLIENT RESULTS
+              </span>
 
-                <span className="engix-solutions-label">
-                  FREE INITIAL CONSULTATION
-                </span>
+              <h2>
+                Real businesses,
+                real digital work
+              </h2>
 
-                <h2>
-                  Tell us what
-                  you need to
-                  build.
-                </h2>
+              <p>
+                Selected domestic and international
+                technology engagements delivered
+                by Engix.
+              </p>
 
-                <p>
-                  You do not need a finished technical specification.
-                  Tell us about your business, current challenge or
-                  product idea and we can begin from there.
-                </p>
+            </div>
 
 
-                <div className="engix-solutions-consultation-points">
+            <div className="engix-ads-results-grid">
 
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Discuss your requirements</span>
+              {results.map((result) => (
+                <article
+                  key={result.title}
+                >
+
+                  <div className="engix-ads-result-location">
+                    <Globe2 size={22} />
+
+                    {result.location}
                   </div>
 
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Explore possible technical approaches</span>
-                  </div>
 
-                  <div>
-                    <CheckCircle2 size={20} />
-                    <span>Determine a practical next step</span>
-                  </div>
-
-                </div>
-
-
-                <div className="engix-solutions-contact-options">
-
-                  <span>
-                    CONTACT ENGIX DIRECTLY
+                  <span className="engix-ads-result-company">
+                    {result.company}
                   </span>
 
 
+                  <h3>
+                    {result.title}
+                  </h3>
+
+
+                  <p>
+                    {result.description}
+                  </p>
+
+
+                  <div className="engix-ads-result-tags">
+
+                    {result.tags.map(
+                      (tag) => (
+                        <span key={tag}>
+                          {tag}
+                        </span>
+                      )
+                    )}
+
+                  </div>
+
+                </article>
+              ))}
+
+            </div>
+
+
+            <Link
+              to="/portfolio"
+              className="engix-ads-result-link"
+            >
+              Explore selected Engix work
+
+              <ArrowUpRight size={21} />
+            </Link>
+
+          </div>
+
+        </section>
+
+
+
+        {/* =====================================================
+            WHY ENGIX
+        ====================================================== */}
+
+        <section className="engix-ads-why">
+
+          <div className="engix-ads-shell">
+
+            <div className="engix-ads-why-grid">
+
+              <div>
+
+                <span className="engix-small-heading">
+                  WHY ENGIX
+                </span>
+
+                <h2>
+                  Built around trust,
+                  growth and real results.
+                </h2>
+
+              </div>
+
+
+              <div className="engix-ads-why-list">
+
+                <article>
+
+                  <TrendingUp
+                    size={33}
+                  />
+
+                  <div>
+
+                    <h3>
+                      Result-Driven Approach
+                    </h3>
+
+                    <p>
+                      We focus on real,
+                      measurable outcomes that
+                      drive consistent business
+                      growth and long-term value.
+                    </p>
+
+                  </div>
+
+                </article>
+
+
+                <article>
+
+                  <Users
+                    size={33}
+                  />
+
+                  <div>
+
+                    <h3>
+                      Transparent Communication
+                    </h3>
+
+                    <p>
+                      We keep communication clear,
+                      honest, and frequent so you
+                      always know what is happening.
+                    </p>
+
+                  </div>
+
+                </article>
+
+
+                <article>
+
+                  <Code2
+                    size={33}
+                  />
+
+                  <div>
+
+                    <h3>
+                      Marketing + Technology
+                    </h3>
+
+                    <p>
+                      Advertising, websites,
+                      landing pages, software and
+                      tracking can work together
+                      through one delivery team.
+                    </p>
+
+                  </div>
+
+                </article>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        {/* =====================================================
+            PROFESSIONAL PARTNERSHIP IMAGE
+        ====================================================== */}
+
+        <section className="engix-ads-partnership">
+
+          <div className="engix-ads-shell">
+
+            <div className="engix-ads-partnership-grid">
+
+              <div className="engix-ads-partnership-copy">
+
+                <span className="engix-small-heading">
+                  A CONNECTED PARTNER
+                </span>
+
+
+                <h2>
+                  Strategy, marketing and
+                  technology working together.
+                </h2>
+
+
+                <p>
+                  Engix combines marketing thinking
+                  with design and technology
+                  execution so businesses do not
+                  have to coordinate separate teams
+                  for every part of their digital
+                  customer journey.
+                </p>
+
+
+                <a href="#bottom-enquiry">
+                  Start a conversation
+
+                  <ArrowRight size={21} />
+                </a>
+
+              </div>
+
+
+              <div className="engix-ads-partnership-image">
+
+                <img
+                  src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1900&q=90"
+                  alt="Professional technology team collaborating"
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        {/* =====================================================
+            SECOND ENQUIRY FORM
+        ====================================================== */}
+
+        <section
+          className="engix-ads-bottom-enquiry"
+          id="bottom-enquiry"
+        >
+
+          <div className="engix-ads-shell">
+
+            <div className="engix-ads-bottom-grid">
+
+              <div className="engix-ads-bottom-copy">
+
+                <span className="engix-small-heading">
+                  GET STARTED
+                </span>
+
+
+                <h2>
+                  Claim your free website audit
+                </h2>
+
+
+                <p>
+                  We'll review your site, ads,
+                  SEO and digital customer journey
+                  and help identify where you may
+                  be losing opportunities.
+                </p>
+
+
+                <p>
+                  Start with a straightforward
+                  conversation about your current
+                  position and what you want your
+                  business to achieve.
+                </p>
+
+
+                <div className="engix-ads-bottom-contact">
+
                   <a href="tel:+917355985134">
 
-                    <Phone size={22} />
+                    <Phone size={26} />
 
                     <div>
                       <small>
-                        Call
+                        CALL US
                       </small>
 
                       <strong>
@@ -1342,11 +1659,11 @@ export default function Solutions() {
                     rel="noreferrer"
                   >
 
-                    <MessageCircle size={22} />
+                    <MessageCircle size={26} />
 
                     <div>
                       <small>
-                        WhatsApp
+                        WHATSAPP
                       </small>
 
                       <strong>
@@ -1359,11 +1676,11 @@ export default function Solutions() {
 
                   <a href="mailto:hello@engix.world">
 
-                    <Mail size={22} />
+                    <Mail size={26} />
 
                     <div>
                       <small>
-                        Email
+                        EMAIL
                       </small>
 
                       <strong>
@@ -1378,138 +1695,52 @@ export default function Solutions() {
               </div>
 
 
-              <div className="engix-solutions-form-card">
-
-                <div className="engix-solutions-form-head">
-
-                  <span>
-                    PROJECT ENQUIRY
-                  </span>
-
-                  <h3>
-                    Start the conversation.
-                  </h3>
-
-                  <p>
-                    Share a few details about your business,
-                    requirement or project idea.
-                  </p>
-
-                </div>
-
-
-                <ContactForm />
-
-
-                <div className="engix-solutions-form-note">
-
-                  <ShieldCheck size={19} />
-
-                  <span>
-                    Your information is used to respond to your
-                    business enquiry.
-                  </span>
-
-                </div>
-
-              </div>
+              <EnquiryForm
+                source="Solutions Bottom Form"
+                title="Enquire now for free consultation"
+                description="Tell us what you want to improve and our team will help you understand the next practical step."
+              />
 
             </div>
 
           </div>
+
         </section>
 
-
-        {/* =====================================================
-            ABOUT / AUTHENTICITY
-        ====================================================== */}
-
-        <section className="engix-solutions-company">
-
-          <div className="engix-solutions-shell">
-
-            <div className="engix-solutions-company-grid">
-
-              <div className="engix-solutions-company-image">
-
-                {/* UNIQUE TO SOLUTIONS PAGE */}
-                <img
-                  src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional software development workspace"
-                />
-
-              </div>
-
-
-              <div className="engix-solutions-company-copy">
-
-                <span className="engix-solutions-label">
-                  ABOUT ENGIX
-                </span>
-
-                <h2>
-                  Practical technology.
-                  Professional delivery.
-                </h2>
-
-                <p>
-                  Engix Tech Private Limited is an India-based
-                  technology and software engineering company working
-                  across web development, mobile applications, custom
-                  software, artificial intelligence, backend systems,
-                  databases and cloud infrastructure.
-                </p>
-
-                <p>
-                  Our experience includes domestic and international
-                  projects, with delivery focused on clear
-                  communication, maintainable engineering and
-                  long-term product thinking.
-                </p>
-
-                <Link to="/about">
-                  Learn more about Engix
-
-                  <ArrowUpRight size={18} />
-                </Link>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
 
 
         {/* =====================================================
             FAQ
         ====================================================== */}
 
-        <section className="engix-solutions-faq">
+        <section
+          className="engix-ads-faq"
+          id="faq"
+        >
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-faq-grid">
+            <div className="engix-ads-faq-grid">
 
               <div>
 
-                <span className="engix-solutions-label">
-                  FREQUENTLY ASKED QUESTIONS
+                <span className="engix-small-heading">
+                  COMMON QUESTIONS
                 </span>
 
                 <h2>
-                  Before we
-                  get started.
+                  Things people usually ask
                 </h2>
 
               </div>
 
 
-              <div className="engix-solutions-faq-list">
+              <div className="engix-ads-faq-list">
 
                 {faqs.map((faq) => (
-
-                  <details key={faq.question}>
+                  <details
+                    key={faq.question}
+                  >
 
                     <summary>
 
@@ -1518,18 +1749,17 @@ export default function Solutions() {
                       </span>
 
                       <ChevronDown
-                        size={20}
-                        strokeWidth={1.7}
+                        size={24}
                       />
 
                     </summary>
+
 
                     <p>
                       {faq.answer}
                     </p>
 
                   </details>
-
                 ))}
 
               </div>
@@ -1537,163 +1767,351 @@ export default function Solutions() {
             </div>
 
           </div>
+
         </section>
+
 
 
         {/* =====================================================
             FINAL CTA
         ====================================================== */}
 
-        <section className="engix-solutions-final">
+        <section className="engix-ads-final">
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-final-grid">
+            <div className="engix-ads-final-inner">
+
+              <span className="engix-small-heading">
+                GET STARTED
+              </span>
+
+
+              <h2>
+                Ready to get more customers?
+              </h2>
+
+
+              <p>
+                Book a free 15-min call or
+                drop us a WhatsApp —
+                no pressure, just clarity.
+              </p>
+
 
               <div>
 
-                <span className="engix-solutions-label">
-                  START A CONVERSATION
-                </span>
+                <a
+                  href="#bottom-enquiry"
+                  className="engix-ads-final-primary"
+                >
+                  Book a free call
 
-                <h2>
-                  Your next digital
-                  solution can start
-                  with one conversation.
-                </h2>
+                  <ArrowRight size={22} />
+                </a>
 
-                <p>
-                  Web, mobile, software, AI, cloud or automation —
-                  tell us what your business needs to improve.
-                </p>
+
+                <a
+                  href="https://wa.me/917355985134"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="engix-ads-final-secondary"
+                >
+                  <MessageCircle size={22} />
+
+                  WhatsApp us
+                </a>
 
               </div>
-
-
-              <a
-                href="#consultation"
-                className="engix-solutions-final-btn"
-              >
-                Book a Free Consultation
-
-                <span>
-                  <ArrowUpRight
-                    size={22}
-                    strokeWidth={1.8}
-                  />
-                </span>
-              </a>
 
             </div>
 
           </div>
+
         </section>
 
 
+
         {/* =====================================================
-            LANDING FOOTER
+            PREMIUM LANDING PAGE FOOTER
         ====================================================== */}
 
-        <footer className="engix-solutions-footer">
+        <footer className="engix-ads-footer">
 
-          <div className="engix-solutions-shell">
+          <div className="engix-ads-shell">
 
-            <div className="engix-solutions-footer-main">
 
-              <div>
+           
+
+
+            {/* =================================================
+                MAIN FOOTER
+            ================================================== */}
+
+            <div className="engix-ads-footer-main">
+
+
+              {/* BRAND */}
+
+              <div className="engix-ads-footer-brand">
 
                 <Link
                   to="/"
-                  className="engix-solutions-footer-logo"
+                  className="engix-ads-footer-logo"
+                  aria-label="Engix Home"
                 >
-                  <span>
-                    ✣
+
+                  <span className="engix-ads-footer-logo-icon">
+
+                    <img
+                      src="/logo.png"
+                      alt="Engix"
+                      className="engix-ads-footer-logo-image"
+                    />
+
                   </span>
 
-                  <strong>
+
+                  <strong className="engix-ads-footer-logo-name">
                     Engix
                   </strong>
+
                 </Link>
 
-                <p>
-                  End-to-end software, AI, application and digital
-                  technology engineering for modern businesses.
+
+                <p className="engix-ads-footer-description">
+                  Engix Tech Private Limited is a digital technology
+                  company helping businesses strengthen their online
+                  presence through performance marketing, professional
+                  websites, software engineering, AI solutions and
+                  scalable digital products.
                 </p>
+
+
+                <div className="engix-ads-footer-trust">
+
+                  <span>
+                    <MapPin
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+
+                    India based
+                  </span>
+
+
+                  <span>
+                    <Globe2
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+
+                    Working globally
+                  </span>
+
+
+                  <span>
+                    <CheckCircle2
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+
+                    Business-focused delivery
+                  </span>
+
+                </div>
 
               </div>
 
 
-              <div>
 
-                <h4>
+              {/* SERVICES */}
+
+              <div className="engix-ads-footer-column">
+
+                <span className="engix-ads-footer-column-title">
+                  Services
+                </span>
+
+
+                <a href="#services">
+                  Search Engine Optimization
+                </a>
+
+
+                <a href="#services">
+                  Google Ads
+                </a>
+
+
+                <a href="#services">
+                  Meta Ads
+                </a>
+
+
+                <a href="#services">
+                  Social Media Marketing
+                </a>
+
+
+                <a href="#services">
+                  Website Development
+                </a>
+
+
+                <Link to="/services">
+                  Explore all services
+                </Link>
+
+              </div>
+
+
+
+              {/* COMPANY */}
+
+              <div className="engix-ads-footer-column">
+
+                <span className="engix-ads-footer-column-title">
                   Company
-                </h4>
+                </span>
+
 
                 <Link to="/about">
-                  About
+                  About Engix
                 </Link>
 
+
                 <Link to="/portfolio">
-                  Projects
+                  Selected Projects
                 </Link>
+
 
                 <Link to="/contact">
                   Contact
                 </Link>
 
-              </div>
+
+                <Link to="/privacy">
+                  Privacy Policy
+                </Link>
 
 
-              <div>
-
-                <h4>
-                  Solutions
-                </h4>
-
-                <a href="#web-development">
-                  Web Development
-                </a>
-
-                <a href="#app-development">
-                  App Development
-                </a>
-
-                <a href="#software-development">
-                  Custom Software
-                </a>
-
-                <a href="#ai-solutions">
-                  AI Solutions
-                </a>
+                <Link to="/terms">
+                  Terms & Conditions
+                </Link>
 
               </div>
 
 
-              <div>
 
-                <h4>
+              {/* CONNECT */}
+
+              <div className="engix-ads-footer-column engix-ads-footer-contact">
+
+                <span className="engix-ads-footer-column-title">
                   Connect
-                </h4>
+                </span>
+
 
                 <a href="mailto:hello@engix.world">
-                  hello@engix.world
+
+                  <span className="engix-ads-footer-contact-icon">
+                    <Mail
+                      size={19}
+                      strokeWidth={1.8}
+                    />
+                  </span>
+
+
+                  <span className="engix-ads-footer-contact-copy">
+
+                    <small>
+                      EMAIL
+                    </small>
+
+                    <strong>
+                      hello@engix.world
+                    </strong>
+
+                  </span>
+
                 </a>
+
 
                 <a href="tel:+917355985134">
-                  +91 7355985134
+
+                  <span className="engix-ads-footer-contact-icon">
+                    <Phone
+                      size={19}
+                      strokeWidth={1.8}
+                    />
+                  </span>
+
+
+                  <span className="engix-ads-footer-contact-copy">
+
+                    <small>
+                      CALL
+                    </small>
+
+                    <strong>
+                      +91 7355985134
+                    </strong>
+
+                  </span>
+
                 </a>
 
-                <a href="tel:+918960958818">
-                  +91 8960958818
+
+                <a
+                  href="https://wa.me/917355985134"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+
+                  <span className="engix-ads-footer-contact-icon">
+                    <MessageCircle
+                      size={19}
+                      strokeWidth={1.8}
+                    />
+                  </span>
+
+
+                  <span className="engix-ads-footer-contact-copy">
+
+                    <small>
+                      WHATSAPP
+                    </small>
+
+                    <strong>
+                      Start a conversation
+                    </strong>
+
+                  </span>
+
                 </a>
 
-                <div className="engix-solutions-address">
 
-                  <MapPin size={17} />
+                <div className="engix-ads-footer-location">
 
-                  <span>
-                    552 Sahityanaka Mod,
-                    Ramnagar, Varanasi, India
+                  <span className="engix-ads-footer-contact-icon">
+                    <MapPin
+                      size={19}
+                      strokeWidth={1.8}
+                    />
+                  </span>
+
+
+                  <span className="engix-ads-footer-contact-copy">
+
+                    <small>
+                      LOCATION
+                    </small>
+
+                    <strong>
+                      Varanasi, Uttar Pradesh, India
+                    </strong>
+
                   </span>
 
                 </div>
@@ -1703,124 +2121,442 @@ export default function Solutions() {
             </div>
 
 
-            <div className="engix-solutions-footer-bottom">
+
+           
+
+
+
+            {/* =================================================
+                FOOTER BOTTOM
+            ================================================== */}
+
+            <div className="engix-ads-footer-bottom">
 
               <p>
                 © {new Date().getFullYear()} Engix Tech Private Limited.
                 All rights reserved.
               </p>
 
-              <div>
+
+              <div className="engix-ads-footer-availability">
+
+                <span className="engix-ads-footer-status-dot" />
+
+                <span>
+                  Available for new business enquiries
+                </span>
+
+              </div>
+
+
+              <div className="engix-ads-footer-bottom-links">
 
                 <Link to="/privacy">
-                  Privacy Policy
+                  Privacy
                 </Link>
 
                 <Link to="/terms">
-                  Terms & Conditions
+                  Terms
                 </Link>
+
+                <a href="mailto:hello@engix.world">
+                  Email
+                </a>
 
               </div>
 
             </div>
 
+
           </div>
+
         </footer>
 
       </main>
 
 
+
+      {/* =====================================================
+          CSS
+      ====================================================== */}
+
       <style>{`
 
         html {
           scroll-behavior: smooth;
+          scroll-padding-top: 76px;
         }
 
-        .engix-solutions-page {
-          --black: #050505;
-          --ink: #111318;
 
-          --gray: #686b72;
+        body {
+          margin: 0;
+        }
 
-          --lavender: #e9e6ff;
-          --yellow: #fff14f;
-          --mint: #dff5df;
-          --peach: #f4dfd2;
 
-          --line: rgba(17,19,24,.11);
+        .engix-ads-page {
+          --ink: #101214;
+          --text: #292d31;
+          --muted: #5d636a;
+          --line: #dedfe2;
+
+          --blue: #dcecff;
+          --blue-deep: #245986;
+
+          --light: #fafaf8;
+          --green: #177837;
 
           background: #ffffff;
           color: var(--ink);
 
           overflow-x: hidden;
-  overflow-y: visible;
         }
 
-        .engix-solutions-shell {
-          width: min(1240px, calc(100% - 56px));
+
+        .engix-ads-shell {
+          width:
+            min(
+              1240px,
+              calc(100% - 56px)
+            );
 
           margin: 0 auto;
         }
 
-        .engix-solutions-label {
+        //logo
+        .engix-navbar-logo {
+  width: max-content;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 10px;
+
+  text-decoration: none;
+
+  flex-shrink: 0;
+}
+
+
+/* LOGO CONTAINER */
+
+.engix-navbar-logo-icon {
+  width: 52px;
+  height: 52px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  border-radius: 10px;
+
+  background: transparent;
+}
+
+
+/* ACTUAL LOGO */
+
+.engix-navbar-logo-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: contain;
+  object-position: center;
+
+  max-width: 100%;
+  max-height: 100%;
+}
+
+
+/* TABLET */
+
+@media (max-width: 900px) {
+
+  .engix-navbar-logo-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .engix-navbar-logo {
+    gap: 8px;
+  }
+
+  .engix-navbar-logo-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+}
+
+
+/* VERY SMALL MOBILE */
+
+@media (max-width: 380px) {
+
+  .engix-navbar-logo-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+}
+
+
+
+        /* =====================================================
+           ALL SMALL SECTION LABELS
+        ====================================================== */
+
+        .engix-small-heading,
+        .engix-ads-heading > span,
+        .engix-lead-heading > span,
+        .engix-ads-web-copy > span {
+
           display: inline-block;
 
-          width: max-content;
+          color: var(--blue-deep);
 
-          padding: 7px 11px;
+          font-size: 15px;
 
-          background: var(--lavender);
+          line-height: 1.2;
 
-          color: #35304b;
-
-          font-size: 10px;
           font-weight: 800;
 
-          letter-spacing: .11em;
+          letter-spacing: .09em;
 
           text-transform: uppercase;
         }
+
 
 
         /* =====================================================
            HEADER
         ====================================================== */
 
-        .engix-solutions-header {
-  position: fixed;
+        .engix-ads-header {
+          position: fixed;
 
-  top: 0;
-  left: 0;
-  right: 0;
+          top: 0;
+          left: 0;
+          right: 0;
 
-  width: 100%;
+          z-index: 9999;
 
-  z-index: 9999;
+          background:
+            rgba(255,255,255,.97);
 
-  background: rgba(255, 255, 255, 0.96);
+          border-bottom:
+            1px solid var(--line);
 
-  border-bottom: 1px solid var(--line);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
 
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+          box-shadow:
+            0 5px 20px rgba(0,0,0,.025);
+        }
 
-  box-shadow: 0 8px 30px rgba(17, 19, 24, 0.05);
-}
 
-        .engix-solutions-header-inner {
-          min-height: 78px;
+        .engix-ads-header-inner {
+          min-height: 72px;
 
           display: grid;
 
-          grid-template-columns: 1fr auto 1fr;
+          grid-template-columns:
+            1fr auto 1fr;
 
           align-items: center;
 
-          gap: 35px;
+          gap: 32px;
         }
 
-        .engix-solutions-logo {
+
+        .engix-ads-logo {
           width: max-content;
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 10px;
+
+          color: var(--ink);
+
+          text-decoration: none;
+        }
+
+
+        .engix-ads-logo span {
+          font-size: 39px;
+          line-height: 1;
+        }
+
+
+        .engix-ads-logo strong {
+          font-size: 25px;
+
+          letter-spacing: -.045em;
+        }
+
+
+        .engix-ads-nav {
+          display: flex;
+
+          align-items: center;
+
+          gap: 34px;
+        }
+
+
+        .engix-ads-nav a {
+          color: #50555b;
+
+          text-decoration: none;
+
+          font-size: 15px;
+
+          font-weight: 650;
+        }
+
+
+        .engix-ads-header-button {
+          justify-self: end;
+
+          min-height: 47px;
+
+          padding: 0 20px;
+
+          display: inline-flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 8px;
+
+          border-radius: 999px;
+
+          background: var(--ink);
+
+          color: white;
+
+          text-decoration: none;
+
+          font-size: 14px;
+
+          font-weight: 750;
+        }
+
+
+
+        /* =====================================================
+           HERO
+           
+           HEADER = 72px
+           HERO TOP = 82px
+           ONLY ABOUT 10px EXTRA GAP
+           
+           IMPORTANT:
+           THIS HERO BACKGROUND IMAGE SHOULD BE
+           RESERVED ONLY FOR /solutions
+        ====================================================== */
+
+        .engix-ads-hero {
+          position: relative;
+
+          padding:
+            82px 0 76px;
+
+          background:
+
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.97) 0%,
+              rgba(255,255,255,.94) 40%,
+              rgba(255,255,255,.88) 67%,
+              rgba(255,255,255,.84) 100%
+            ),
+
+            url(
+              'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=2200&q=92'
+            );
+
+          background-size: cover;
+
+          background-position: center;
+
+          background-repeat: no-repeat;
+
+          border-bottom:
+            1px solid rgba(17,20,24,.06);
+        }
+
+
+        .engix-ads-hero::before {
+          content: '';
+
+          position: absolute;
+
+          inset: 0;
+
+          pointer-events: none;
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,.15),
+              rgba(250,250,247,.3)
+            );
+        }
+
+
+        .engix-ads-hero > .engix-ads-shell {
+          position: relative;
+
+          z-index: 2;
+        }
+
+
+        .engix-ads-hero-grid {
+          display: grid;
+
+          grid-template-columns:
+            minmax(0,1.04fr)
+            minmax(430px,.76fr);
+
+          gap: 68px;
+
+          align-items: start;
+        }
+
+
+        .engix-ads-hero-copy {
+          max-width: 790px;
+
+          padding-top: 7px;
+        }
+
+
+        .engix-ads-audit-badge {
+          width: max-content;
+
+          max-width: 100%;
+
+          padding:
+            11px 18px;
 
           display: inline-flex;
 
@@ -1828,149 +2564,92 @@ export default function Solutions() {
 
           gap: 9px;
 
-          color: var(--ink);
-
-          text-decoration: none;
-        }
-
-        .engix-solutions-logo > span {
-          font-size: 37px;
-
-          line-height: 1;
-        }
-
-        .engix-solutions-logo strong {
-          font-size: 24px;
-
-          letter-spacing: -.045em;
-        }
-
-        .engix-solutions-nav {
-          display: flex;
-
-          align-items: center;
-
-          gap: 32px;
-        }
-
-        .engix-solutions-nav a {
-          color: #56585f;
-
-          text-decoration: none;
-
-          font-size: 13px;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-header-btn {
-          justify-self: end;
-
-          min-height: 46px;
-
-          padding: 0 18px;
-
-          display: inline-flex;
-
-          align-items: center;
-
-          gap: 8px;
+          border:
+            1px solid #91bee6;
 
           border-radius: 999px;
 
-          background: var(--black);
+          background:
+            rgba(220,236,255,.96);
 
-          color: white;
+          color: var(--blue-deep);
 
-          text-decoration: none;
+          font-size: 16px;
 
-          font-size: 12px;
+          line-height: 1.1;
 
           font-weight: 700;
+
+          box-shadow:
+            0 8px 28px
+            rgba(36,89,134,.08);
         }
 
 
-        /* =====================================================
-           HERO
-        ====================================================== */
+        .engix-ads-hero h1 {
+          max-width: 870px;
 
-       .engix-solutions-hero {
-  padding: 158px 0 0;
+          margin:
+            27px 0 0;
 
-  background: #ffffff;
-}
+          font-size:
+            clamp(
+              3.7rem,
+              5.65vw,
+              6rem
+            );
 
-        .engix-solutions-hero-grid {
-          display: grid;
+          line-height: .99;
 
-          grid-template-columns: 1.05fr .95fr;
+          letter-spacing: -.058em;
 
-          gap: 75px;
-
-          align-items: end;
+          font-weight: 560;
         }
 
-        .engix-solutions-hero-copy {
-          padding: 70px 0 100px;
+
+        .engix-ads-hero h1 span {
+          color: var(--blue-deep);
         }
 
-        .engix-solutions-hero h1 {
-          max-width: 850px;
 
-          margin: 26px 0 0;
+        .engix-ads-hero-description {
+          max-width: 760px;
 
-          color: var(--ink);
+          margin:
+            29px 0 0;
 
-          font-size: clamp(4.2rem,7vw,7.4rem);
+          color: #454b52;
 
-          line-height: .88;
+          font-size:
+            clamp(
+              1.3rem,
+              1.7vw,
+              1.55rem
+            );
 
-          letter-spacing: -.073em;
+          line-height: 1.65;
 
-          font-weight: 600;
+          font-weight: 400;
         }
 
-        .engix-solutions-hero-lead {
-          max-width: 700px;
 
-          margin: 38px 0 0;
-
-          color: #45474e;
-
-          font-size: clamp(1.16rem,1.5vw,1.37rem);
-
-          line-height: 1.66;
-
-          font-weight: 500;
-        }
-
-        .engix-solutions-hero-description {
-          max-width: 680px;
-
-          margin: 17px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.78;
-        }
-
-        .engix-solutions-hero-buttons {
+        .engix-ads-hero-buttons {
           display: flex;
 
           flex-wrap: wrap;
 
-          gap: 12px;
+          gap: 13px;
 
-          margin-top: 38px;
+          margin-top: 32px;
         }
 
-        .engix-solutions-primary-btn,
-        .engix-solutions-secondary-btn {
+
+        .engix-ads-primary-button,
+        .engix-ads-secondary-button {
           min-height: 58px;
 
-          padding: 0 22px;
+          padding:
+            0 23px;
 
           display: inline-flex;
 
@@ -1980,1415 +2659,297 @@ export default function Solutions() {
 
           gap: 9px;
 
+          border-radius: 9px;
+
           text-decoration: none;
 
-          font-size: 13px;
+          font-size: 16px;
 
-          font-weight: 750;
-
-          transition: transform .2s ease;
-        }
-
-        .engix-solutions-primary-btn {
-          background: var(--black);
-
-          color: white;
-        }
-
-        .engix-solutions-primary-btn svg {
-          color: var(--yellow);
-        }
-
-        .engix-solutions-secondary-btn {
-          border: 1px solid rgba(5,5,5,.16);
-
-          background: white;
-
-          color: var(--black);
-        }
-
-        .engix-solutions-primary-btn:hover,
-        .engix-solutions-secondary-btn:hover {
-          transform: translateY(-2px);
-        }
-
-        .engix-solutions-hero-trust {
-          display: flex;
-
-          flex-wrap: wrap;
-
-          gap: 14px 22px;
-
-          margin-top: 36px;
-        }
-
-        .engix-solutions-hero-trust > div {
-          display: flex;
-
-          align-items: center;
-
-          gap: 7px;
-
-          color: #62646a;
-
-          font-size: 11px;
-        }
-
-
-        /* HERO IMAGE */
-
-        .engix-solutions-hero-image {
-          min-height: 720px;
-
-          position: relative;
-
-          overflow: hidden;
-        }
-
-        .engix-solutions-hero-image > img {
-          width: 100%;
-
-          height: 720px;
-
-          display: block;
-
-          object-fit: cover;
-
-          transition: transform .7s ease;
-        }
-
-        .engix-solutions-hero-image:hover > img {
-          transform: scale(1.025);
-        }
-
-        .engix-solutions-hero-image::after {
-          content: '';
-
-          position: absolute;
-
-          inset: 0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 46%,
-              rgba(5,5,5,.74)
-            );
-        }
-
-        .engix-solutions-hero-overlay {
-          position: absolute;
-
-          z-index: 2;
-
-          left: 30px;
-
-          bottom: 32px;
-
-          color: white;
-        }
-
-        .engix-solutions-hero-overlay > span {
-          display: inline-block;
-
-          margin-bottom: 10px;
-
-          padding: 5px 8px;
-
-          background: var(--yellow);
-
-          color: var(--black);
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-        }
-
-        .engix-solutions-hero-overlay strong {
-          display: block;
-
-          font-size: clamp(2rem,3vw,3rem);
-
-          line-height: 1.03;
-
-          letter-spacing: -.045em;
-        }
-
-        .engix-solutions-hero-card {
-          position: absolute;
-
-          z-index: 3;
-
-          top: 25px;
-
-          right: 25px;
-
-          width: 235px;
-
-          padding: 20px;
-
-          background: rgba(255,255,255,.96);
-
-          backdrop-filter: blur(10px);
-        }
-
-        .engix-solutions-hero-card small {
-          color: #85868c;
-
-          font-size: 8px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-        }
-
-        .engix-solutions-hero-card > div {
-          display: flex;
-
-          flex-wrap: wrap;
-
-          gap: 6px;
-
-          margin-top: 15px;
-        }
-
-        .engix-solutions-hero-card span {
-          padding: 7px 9px;
-
-          border: 1px solid rgba(5,5,5,.08);
-
-          color: #36373c;
-
-          font-size: 9px;
-        }
-
-        .engix-solutions-hero-card span:nth-child(1) {
-          background: var(--lavender);
-        }
-
-        .engix-solutions-hero-card span:nth-child(2) {
-          background: var(--yellow);
-        }
-
-        .engix-solutions-hero-card span:nth-child(3) {
-          background: var(--mint);
-        }
-
-        .engix-solutions-hero-card span:nth-child(4) {
-          background: var(--peach);
-        }
-
-
-        /* =====================================================
-           TRUST
-        ====================================================== */
-
-        .engix-solutions-trust {
-          border-top: 1px solid var(--line);
-
-          border-bottom: 1px solid var(--line);
-
-          background: white;
-        }
-
-        .engix-solutions-trust-grid {
-          display: grid;
-
-          grid-template-columns: repeat(4,1fr);
-        }
-
-        .engix-solutions-trust-grid article {
-          min-height: 125px;
-
-          padding: 26px;
-
-          display: grid;
-
-          grid-template-columns: 48px 1fr;
-
-          gap: 13px;
-
-          align-items: center;
-
-          border-right: 1px solid var(--line);
-        }
-
-        .engix-solutions-trust-grid article:first-child {
-          padding-left: 0;
-        }
-
-        .engix-solutions-trust-grid article:last-child {
-          border-right: 0;
-        }
-
-        .engix-solutions-trust-grid svg {
-          width: 45px;
-
-          height: 45px;
-
-          padding: 10px;
-
-          color: var(--ink);
-        }
-
-        .engix-solutions-trust-grid article:nth-child(1) svg {
-          background: var(--lavender);
-        }
-
-        .engix-solutions-trust-grid article:nth-child(2) svg {
-          background: var(--yellow);
-        }
-
-        .engix-solutions-trust-grid article:nth-child(3) svg {
-          background: var(--mint);
-        }
-
-        .engix-solutions-trust-grid article:nth-child(4) svg {
-          background: var(--peach);
-        }
-
-        .engix-solutions-trust-grid strong {
-          display: block;
-
-          color: var(--ink);
-
-          font-size: 13px;
-        }
-
-        .engix-solutions-trust-grid span {
-          display: block;
-
-          margin-top: 5px;
-
-          color: #777980;
-
-          font-size: 10px;
-
-          line-height: 1.5;
-        }
-
-
-        /* =====================================================
-           COMMON HEADING
-        ====================================================== */
-
-        .engix-solutions-heading-grid {
-          display: grid;
-
-          grid-template-columns: 1.25fr .75fr;
-
-          gap: 80px;
-
-          align-items: end;
-
-          margin-bottom: 65px;
-        }
-
-        .engix-solutions-heading-grid h2 {
-          max-width: 850px;
-
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3rem,5vw,5.2rem);
-
-          line-height: .97;
-
-          letter-spacing: -.06em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-heading-grid > p {
-          margin: 0;
-
-          color: var(--gray);
-
-          font-size: 15px;
-
-          line-height: 1.75;
-        }
-
-
-        /* =====================================================
-           SERVICES
-        ====================================================== */
-
-        .engix-solutions-services {
-          padding: 120px 0;
-
-          background: white;
-        }
-
-        .engix-solutions-service-grid {
-          display: grid;
-
-          grid-template-columns: repeat(2,1fr);
-
-          gap: 14px;
-        }
-
-        .engix-solutions-service {
-          position: relative;
-
-          min-height: 520px;
-
-          padding: 35px;
-
-          display: flex;
-
-          flex-direction: column;
-
-          background: white;
-
-          border: 1px solid var(--line);
-
-          overflow: hidden;
+          font-weight: 720;
 
           transition:
-            transform .25s ease,
-            box-shadow .25s ease;
+            transform .2s ease,
+            box-shadow .2s ease;
         }
 
-        .engix-solutions-service::before {
-          content: '';
 
-          position: absolute;
+        .engix-ads-primary-button {
+          background: var(--ink);
 
-          top: 0;
-          left: 0;
-          right: 0;
+          color: white;
 
-          height: 6px;
+          box-shadow:
+            0 12px 26px
+            rgba(16,18,20,.15);
         }
 
-        .service-lavender::before {
-          background: var(--lavender);
-        }
 
-        .service-yellow::before {
-          background: var(--yellow);
-        }
+        .engix-ads-secondary-button {
+          border:
+            1px solid #c7cacf;
 
-        .service-mint::before {
-          background: var(--mint);
-        }
-
-        .service-peach::before {
-          background: var(--peach);
-        }
-
-        .engix-solutions-service:hover {
-          transform: translateY(-4px);
-
-          box-shadow: 0 22px 52px rgba(0,0,0,.055);
-        }
-
-        .engix-solutions-service-top {
-          display: flex;
-
-          align-items: center;
-
-          justify-content: space-between;
-        }
-
-        .engix-solutions-service-top > span {
-          color: #818288;
-
-          font-size: 10px;
-
-          font-weight: 700;
-        }
-
-        .engix-solutions-service-top > div {
-          width: 50px;
-
-          height: 50px;
-
-          display: grid;
-
-          place-items: center;
+          background:
+            rgba(255,255,255,.92);
 
           color: var(--ink);
         }
 
-        .service-lavender
-        .engix-solutions-service-top > div {
-          background: var(--lavender);
-        }
 
-        .service-yellow
-        .engix-solutions-service-top > div {
-          background: var(--yellow);
-        }
-
-        .service-mint
-        .engix-solutions-service-top > div {
-          background: var(--mint);
-        }
-
-        .service-peach
-        .engix-solutions-service-top > div {
-          background: var(--peach);
-        }
-
-        .engix-solutions-service-category {
-          margin-top: 55px;
-
-          color: #85868c;
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-        }
-
-        .engix-solutions-service h3 {
-          max-width: 580px;
-
-          margin: 14px 0 18px;
-
-          color: var(--ink);
-
-          font-size: clamp(2rem,3vw,3rem);
-
-          line-height: 1.03;
-
-          letter-spacing: -.05em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-service > p {
-          max-width: 570px;
-
-          margin: 0;
-
-          color: var(--gray);
-
-          font-size: 13px;
-
-          line-height: 1.72;
-        }
-
-        .engix-solutions-service-points {
-          display: grid;
-
-          grid-template-columns: repeat(2,1fr);
-
-          gap: 0 15px;
-
-          margin-top: 25px;
-        }
-
-        .engix-solutions-service-points > div {
-          padding: 11px 0;
-
-          display: flex;
-
-          gap: 7px;
-
-          align-items: center;
-
-          border-top: 1px solid var(--line);
-
-          color: #55575d;
-
-          font-size: 10px;
-        }
-
-        .engix-solutions-service > a {
-          width: max-content;
-
-          margin-top: auto;
-
-          padding-top: 26px;
-
-          display: inline-flex;
-
-          align-items: center;
-
-          gap: 7px;
-
-          color: var(--ink);
-
-          text-decoration: none;
-
-          font-size: 12px;
-
-          font-weight: 750;
-
-          border-bottom: 1px solid var(--ink);
+        .engix-ads-primary-button:hover,
+        .engix-ads-secondary-button:hover {
+          transform:
+            translateY(-2px);
         }
 
 
-        /* =====================================================
-           STACK
-        ====================================================== */
-
-        .engix-solutions-stack {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-stack-grid {
-          display: grid;
-
-          grid-template-columns: .8fr 1.2fr;
-
-          gap: 90px;
-        }
-
-        .engix-solutions-stack-grid h2 {
-          max-width: 650px;
-
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3rem,4.8vw,5rem);
-
-          line-height: .97;
-
-          letter-spacing: -.06em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-stack-grid > div:first-child > p {
-          max-width: 580px;
-
-          margin: 25px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.75;
-        }
-
-        .engix-solutions-stack-list article {
-          padding: 23px 0;
-
-          display: grid;
-
-          grid-template-columns: 130px 1fr;
-
-          gap: 25px;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-stack-list article > span {
-          color: #85868c;
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-        }
-
-        .engix-solutions-stack-list article > div {
+        .engix-ads-hero-points {
           display: flex;
 
           flex-wrap: wrap;
 
-          gap: 7px;
-        }
-
-        .engix-solutions-stack-list strong {
-          padding: 8px 10px;
-
-          border: 1px solid var(--line);
-
-          color: #474950;
-
-          font-size: 10px;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-stack-list article:nth-child(4n + 1) strong {
-          background: var(--lavender);
-        }
-
-        .engix-solutions-stack-list article:nth-child(4n + 2) strong {
-          background: var(--yellow);
-        }
-
-        .engix-solutions-stack-list article:nth-child(4n + 3) strong {
-          background: var(--mint);
-        }
-
-        .engix-solutions-stack-list article:nth-child(4n + 4) strong {
-          background: var(--peach);
-        }
-
-
-        /* =====================================================
-           CONTEXT
-        ====================================================== */
-
-        .engix-solutions-context {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-context-grid {
-          display: grid;
-
-          grid-template-columns: .95fr 1.05fr;
-
-          gap: 85px;
-
-          align-items: center;
-        }
-
-        .engix-solutions-context-image {
-          height: 650px;
-
-          position: relative;
-
-          overflow: hidden;
-        }
-
-        .engix-solutions-context-image img {
-          width: 100%;
-
-          height: 100%;
-
-          object-fit: cover;
-        }
-
-        .engix-solutions-context-image::after {
-          content: '';
-
-          position: absolute;
-
-          inset: 0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 50%,
-              rgba(5,5,5,.72)
-            );
-        }
-
-        .engix-solutions-context-image > div {
-          position: absolute;
-
-          z-index: 2;
-
-          left: 30px;
-
-          right: 30px;
-
-          bottom: 30px;
-
-          color: white;
-        }
-
-        .engix-solutions-context-image span,
-        .engix-solutions-why-image span {
-          display: inline-block;
-
-          margin-bottom: 10px;
-
-          padding: 5px 8px;
-
-          background: var(--yellow);
-
-          color: var(--black);
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-        }
-
-        .engix-solutions-context-image strong,
-        .engix-solutions-why-image strong {
-          display: block;
-
-          max-width: 470px;
-
-          font-size: clamp(2rem,3vw,3rem);
-
-          line-height: 1.03;
-
-          letter-spacing: -.045em;
-        }
-
-        .engix-solutions-context-copy h2,
-        .engix-solutions-why-copy h2 {
-          max-width: 700px;
-
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3rem,4.8vw,5rem);
-
-          line-height: .97;
-
-          letter-spacing: -.06em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-context-copy > p,
-        .engix-solutions-why-copy > p {
-          max-width: 680px;
-
-          margin: 25px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.78;
-        }
-
-        .engix-solutions-context-points {
-          margin-top: 35px;
-        }
-
-        .engix-solutions-context-points > div {
-          padding: 14px 0;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 9px;
-
-          border-top: 1px solid var(--line);
-
-          color: #4e5056;
-
-          font-size: 12px;
-        }
-
-
-        /* =====================================================
-           WORK
-        ====================================================== */
-
-        .engix-solutions-work {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-work-heading {
-          max-width: 900px;
-
-          margin-bottom: 60px;
-        }
-
-        .engix-solutions-work-heading h2,
-        .engix-solutions-process-heading h2 {
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3rem,5vw,5.2rem);
-
-          line-height: .97;
-
-          letter-spacing: -.06em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-work-heading p,
-        .engix-solutions-process-heading p {
-          max-width: 650px;
-
-          margin: 24px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.75;
-        }
-
-        .engix-solutions-work-grid {
-          display: grid;
-
-          grid-template-columns: repeat(3,1fr);
-
-          gap: 14px;
-        }
-
-        .engix-solutions-work-grid article {
-          min-height: 410px;
-
-          padding: 31px;
-
-          display: flex;
-
-          flex-direction: column;
-
-          border: 1px solid var(--line);
-
-          background: white;
-        }
-
-        .engix-solutions-work-grid article:nth-child(1) {
-          border-top: 6px solid var(--lavender);
-        }
-
-        .engix-solutions-work-grid article:nth-child(2) {
-          border-top: 6px solid var(--yellow);
-        }
-
-        .engix-solutions-work-grid article:nth-child(3) {
-          border-top: 6px solid var(--mint);
-        }
-
-        .engix-solutions-work-top {
-          display: flex;
-
-          align-items: center;
-
-          justify-content: space-between;
-        }
-
-        .engix-solutions-work-top > span {
-          color: #85868c;
-
-          font-size: 10px;
-        }
-
-        .engix-solutions-work-location {
-          margin-top: 55px;
-
-          color: #85868c;
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
-
-          text-transform: uppercase;
-        }
-
-        .engix-solutions-work-grid h3 {
-          margin: 12px 0 15px;
-
-          color: var(--ink);
-
-          font-size: 25px;
-
-          line-height: 1.05;
-
-          letter-spacing: -.04em;
-        }
-
-        .engix-solutions-work-grid p {
-          margin: 0;
-
-          color: var(--gray);
-
-          font-size: 12px;
-
-          line-height: 1.72;
-        }
-
-        .engix-solutions-work-tags {
-          display: flex;
-
-          flex-wrap: wrap;
-
-          gap: 6px;
-
-          margin-top: auto;
-
-          padding-top: 25px;
-        }
-
-        .engix-solutions-work-tags span {
-          padding: 7px 8px;
-
-          border: 1px solid var(--line);
-
-          color: #55575d;
-
-          font-size: 9px;
-        }
-
-        .engix-solutions-work-link {
-          width: max-content;
-
-          margin-top: 35px;
-
-          display: inline-flex;
-
-          align-items: center;
-
-          gap: 7px;
-
-          color: var(--ink);
-
-          text-decoration: none;
-
-          font-size: 12px;
-
-          font-weight: 750;
-
-          padding-bottom: 4px;
-
-          border-bottom: 1px solid var(--ink);
-        }
-
-
-        /* =====================================================
-           WHY
-        ====================================================== */
-
-        .engix-solutions-why {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-why-grid {
-          display: grid;
-
-          grid-template-columns: 1.05fr .95fr;
-
-          gap: 85px;
-
-          align-items: center;
-        }
-
-        .engix-solutions-reasons {
-          margin-top: 38px;
-        }
-
-        .engix-solutions-reasons article {
-          padding: 21px 0;
-
-          display: grid;
-
-          grid-template-columns: 58px 1fr;
-
-          gap: 15px;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .reason-icon {
-          width: 46px;
-
-          height: 46px;
-
-          display: grid;
-
-          place-items: center;
-
-          color: var(--ink);
-        }
-
-        .reason-1 {
-          background: var(--lavender);
-        }
-
-        .reason-2 {
-          background: var(--yellow);
-        }
-
-        .reason-3 {
-          background: var(--mint);
-        }
-
-        .reason-4 {
-          background: var(--peach);
-        }
-
-        .engix-solutions-reasons h3 {
-          margin: 0 0 6px;
-
-          color: var(--ink);
-
-          font-size: 18px;
-        }
-
-        .engix-solutions-reasons p {
-          margin: 0;
-
-          color: var(--gray);
-
-          font-size: 12px;
-
-          line-height: 1.68;
-        }
-
-        .engix-solutions-why-image {
-          height: 670px;
-
-          position: relative;
-
-          overflow: hidden;
-        }
-
-        .engix-solutions-why-image img {
-          width: 100%;
-
-          height: 100%;
-
-          object-fit: cover;
-        }
-
-        .engix-solutions-why-image::after {
-          content: '';
-
-          position: absolute;
-
-          inset: 0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 50%,
-              rgba(5,5,5,.7)
-            );
-        }
-
-        .engix-solutions-why-image > div {
-          position: absolute;
-
-          z-index: 2;
-
-          left: 30px;
-
-          bottom: 30px;
-
-          color: white;
-        }
-
-
-        /* =====================================================
-           PROCESS
-        ====================================================== */
-
-        .engix-solutions-process {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-process-heading {
-          max-width: 900px;
-
-          margin-bottom: 60px;
-        }
-
-        .engix-solutions-process-grid {
-          display: grid;
-
-          grid-template-columns: repeat(3,1fr);
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-process-grid article {
-          min-height: 300px;
-
-          padding: 30px;
-
-          display: flex;
-
-          flex-direction: column;
-
-          border-right: 1px solid var(--line);
-
-          border-bottom: 1px solid var(--line);
-        }
-
-        .engix-solutions-process-grid article:nth-child(3n + 1) {
-          padding-left: 0;
-        }
-
-        .engix-solutions-process-grid article:nth-child(3n) {
-          border-right: 0;
-        }
-
-        .engix-solutions-process-grid article > span {
-          width: max-content;
-
-          padding: 6px 9px;
-
-          background: var(--lavender);
-
-          font-size: 10px;
-
-          font-weight: 800;
-        }
-
-        .solution-process-2 > span,
-        .solution-process-6 > span {
-          background: var(--yellow) !important;
-        }
-
-        .solution-process-3 > span {
-          background: var(--mint) !important;
-        }
-
-        .solution-process-4 > span {
-          background: var(--peach) !important;
-        }
-
-        .engix-solutions-process-grid h3 {
-          margin: auto 0 13px;
-
-          color: var(--ink);
-
-          font-size: 26px;
-
-          letter-spacing: -.04em;
-        }
-
-        .engix-solutions-process-grid p {
-          margin: 0;
-
-          color: var(--gray);
-
-          font-size: 12px;
-
-          line-height: 1.7;
-        }
-
-
-        /* =====================================================
-           CONSULTATION
-        ====================================================== */
-
-        .engix-solutions-consultation {
-          padding: 120px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-consultation-grid {
-          display: grid;
-
-          grid-template-columns: .85fr 1.15fr;
-
-          gap: 90px;
-
-          align-items: start;
-        }
-
-        .engix-solutions-consultation-copy {
-          position: sticky;
-
-          top: 110px;
-        }
-
-        .engix-solutions-consultation-copy h2 {
-          max-width: 620px;
-
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3rem,4.8vw,5rem);
-
-          line-height: .97;
-
-          letter-spacing: -.06em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-consultation-copy > p {
-          max-width: 570px;
-
-          margin: 25px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.75;
-        }
+          gap:
+            16px 25px;
 
-        .engix-solutions-consultation-points {
-          margin-top: 34px;
+          margin-top: 32px;
         }
 
-        .engix-solutions-consultation-points > div {
-          padding: 13px 0;
 
+        .engix-ads-hero-points > div {
           display: flex;
 
           align-items: center;
 
           gap: 8px;
 
-          border-top: 1px solid var(--line);
+          color: #3f454b;
 
-          color: #505258;
+          font-size: 16px;
 
-          font-size: 12px;
+          font-weight: 500;
         }
 
-        .engix-solutions-contact-options {
-          margin-top: 40px;
+
+        .engix-ads-hero-points svg {
+          color: var(--green);
+
+          flex-shrink: 0;
         }
 
-        .engix-solutions-contact-options > span {
-          display: block;
 
-          margin-bottom: 10px;
+        .engix-ads-direct-contact {
+          display: flex;
 
-          color: #898a90;
+          flex-wrap: wrap;
 
-          font-size: 9px;
+          gap:
+            14px 23px;
 
-          font-weight: 800;
-
-          letter-spacing: .1em;
+          margin-top: 25px;
         }
 
-        .engix-solutions-contact-options > a {
-          padding: 15px 0;
 
-          display: grid;
-
-          grid-template-columns: 44px 1fr;
-
-          gap: 10px;
+        .engix-ads-direct-contact a {
+          display: inline-flex;
 
           align-items: center;
 
-          border-top: 1px solid var(--line);
+          gap: 8px;
 
-          color: var(--ink);
+          color: #454a51;
 
           text-decoration: none;
-        }
 
-        .engix-solutions-contact-options svg {
-          width: 42px;
-
-          height: 42px;
-
-          padding: 10px;
-
-          background: var(--lavender);
-        }
-
-        .engix-solutions-contact-options > a:nth-of-type(2) svg {
-          background: var(--mint);
-        }
-
-        .engix-solutions-contact-options > a:nth-of-type(3) svg {
-          background: var(--yellow);
-        }
-
-        .engix-solutions-contact-options small,
-        .engix-solutions-contact-options strong {
-          display: block;
-        }
-
-        .engix-solutions-contact-options small {
-          margin-bottom: 3px;
-
-          color: #85868c;
-
-          font-size: 9px;
-        }
-
-        .engix-solutions-contact-options strong {
-          font-size: 12px;
+          font-size: 15px;
 
           font-weight: 650;
         }
 
-        .engix-solutions-form-card {
-          padding: 45px;
 
-          background: white;
 
-          border: 1px solid var(--line);
+        /* =====================================================
+           HERO FORM
+        ====================================================== */
 
-          box-shadow: 0 20px 60px rgba(0,0,0,.045);
+        .engix-hero-form-wrap {
+          scroll-margin-top: 95px;
         }
 
-        .engix-solutions-form-head {
-          padding-bottom: 28px;
 
-          margin-bottom: 30px;
+        .engix-lead-card {
+          padding: 31px;
 
-          border-bottom: 1px solid var(--line);
+          border:
+            1px solid rgba(199,202,207,.9);
+
+          border-radius: 18px;
+
+          background:
+            rgba(255,255,255,.97);
+
+          box-shadow:
+            0 25px 70px
+            rgba(18,24,30,.11);
+
+          backdrop-filter:
+            blur(12px);
+
+          -webkit-backdrop-filter:
+            blur(12px);
         }
 
-        .engix-solutions-form-head > span {
-          display: inline-block;
 
-          padding: 6px 9px;
-
-          background: var(--yellow);
-
-          color: var(--black);
-
-          font-size: 9px;
-
-          font-weight: 800;
-
-          letter-spacing: .1em;
+        .engix-lead-heading > span {
+          font-size: 14px;
         }
 
-        .engix-solutions-form-head h3 {
-          margin: 17px 0 8px;
 
-          color: var(--ink);
+        .engix-lead-heading h2 {
+          margin:
+            10px 0 8px;
 
-          font-size: 30px;
+          font-size:
+            clamp(
+              2rem,
+              2.7vw,
+              2.75rem
+            );
 
-          letter-spacing: -.04em;
+          line-height: 1.05;
+
+          letter-spacing: -.045em;
         }
 
-        .engix-solutions-form-head p {
+
+        .engix-lead-heading p {
           margin: 0;
 
-          color: var(--gray);
+          color: #5d6269;
 
-          font-size: 12px;
+          font-size: 16px;
 
           line-height: 1.65;
         }
 
-        .engix-solutions-form-note {
-          margin-top: 24px;
 
-          padding-top: 18px;
+        .engix-lead-row {
+          display: grid;
+
+          grid-template-columns:
+            repeat(
+              2,
+              minmax(0,1fr)
+            );
+
+          gap: 13px;
+        }
+
+
+        .engix-lead-field {
+          margin-top: 17px;
+        }
+
+
+        .engix-lead-field label {
+          display: block;
+
+          margin-bottom: 7px;
+
+          color: #353a40;
+
+          font-size: 14px;
+
+          font-weight: 700;
+        }
+
+
+        .engix-lead-field input,
+        .engix-lead-field select,
+        .engix-lead-field textarea {
+          width: 100%;
+
+          box-sizing: border-box;
+
+          border:
+            1px solid #cfd2d6;
+
+          border-radius: 8px;
+
+          outline: 0;
+
+          background: #ffffff;
+
+          color: var(--ink);
+
+          font-family: inherit;
+
+          font-size: 15px;
+
+          transition:
+            border-color .2s ease,
+            box-shadow .2s ease;
+        }
+
+
+        .engix-lead-field input,
+        .engix-lead-field select {
+          min-height: 50px;
+
+          padding:
+            0 13px;
+        }
+
+
+        .engix-lead-field textarea {
+          min-height: 108px;
+
+          padding: 13px;
+
+          resize: vertical;
+        }
+
+
+        .engix-lead-field input:focus,
+        .engix-lead-field select:focus,
+        .engix-lead-field textarea:focus {
+          border-color:
+            #72a6d7;
+
+          box-shadow:
+            0 0 0 3px
+            rgba(50,112,170,.08);
+        }
+
+
+        .engix-lead-consent {
+          margin-top: 16px;
+
+          display: grid;
+
+          grid-template-columns:
+            18px 1fr;
+
+          gap: 9px;
+
+          align-items: start;
+
+          color: #5f646b;
+
+          font-size: 12px;
+
+          line-height: 1.6;
+        }
+
+
+        .engix-lead-consent input {
+          margin-top: 2px;
+        }
+
+
+        .engix-lead-status {
+          margin-top: 15px;
+
+          padding:
+            13px 14px;
 
           display: flex;
 
@@ -3396,81 +2957,868 @@ export default function Solutions() {
 
           gap: 8px;
 
-          border-top: 1px solid var(--line);
+          border-radius: 7px;
 
-          color: #76777d;
+          font-size: 13px;
 
-          font-size: 10px;
-
-          line-height: 1.6;
+          line-height: 1.55;
         }
+
+
+        .engix-lead-status.success {
+          background:
+            #e6f5e9;
+
+          color:
+            #235e2c;
+        }
+
+
+        .engix-lead-status.error {
+          background:
+            #fff0e9;
+
+          color:
+            #813e29;
+        }
+
+
+        .engix-lead-submit {
+          width: 100%;
+
+          min-height: 56px;
+
+          margin-top: 20px;
+
+          padding:
+            0 15px;
+
+          border: 0;
+
+          border-radius: 8px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 9px;
+
+          background: var(--ink);
+
+          color: white;
+
+          font-family: inherit;
+
+          font-size: 15px;
+
+          font-weight: 750;
+
+          cursor: pointer;
+        }
+
+
+        .engix-lead-submit:disabled {
+          opacity: .6;
+
+          cursor: not-allowed;
+        }
+
+
+        .engix-lead-private {
+          margin-top: 13px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 7px;
+
+          color: #686d74;
+
+          font-size: 12px;
+        }
+
 
 
         /* =====================================================
-           COMPANY
+           PROOF
         ====================================================== */
 
-        .engix-solutions-company {
-          padding: 120px 0;
+        .engix-ads-proof {
+          padding:
+            0 0 75px;
 
-          background: white;
-
-          border-top: 1px solid var(--line);
+          background:
+            #fafaf7;
         }
 
-        .engix-solutions-company-grid {
+
+        .engix-ads-proof-grid {
           display: grid;
 
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns:
+            repeat(4,1fr);
 
-          gap: 85px;
+          border:
+            1px solid var(--line);
 
-          align-items: center;
-        }
+          border-radius: 18px;
 
-        .engix-solutions-company-image {
-          height: 600px;
+          background:
+            white;
 
           overflow: hidden;
         }
 
-        .engix-solutions-company-image img {
+
+        .engix-ads-proof-grid article {
+          min-height: 155px;
+
+          padding: 27px;
+
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+
+          justify-content: center;
+
+          text-align: center;
+
+          border-right:
+            1px solid var(--line);
+        }
+
+
+        .engix-ads-proof-grid article:last-child {
+          border-right: 0;
+        }
+
+
+        .engix-ads-proof-grid strong {
+          font-size:
+            clamp(
+              2rem,
+              3vw,
+              3rem
+            );
+
+          line-height: 1;
+
+          letter-spacing: -.04em;
+        }
+
+
+        .engix-ads-proof-grid span {
+          margin-top: 10px;
+
+          color: #4e545a;
+
+          font-size: 16px;
+
+          line-height: 1.4;
+        }
+
+
+
+        /* =====================================================
+           PROFESSIONAL IMAGE
+        ====================================================== */
+
+        .engix-ads-intro-image {
+          padding:
+            25px 0 85px;
+
+          background: white;
+        }
+
+
+        .engix-ads-intro-image-wrap {
+          height: 520px;
+
+          position: relative;
+
+          overflow: hidden;
+
+          border-radius: 20px;
+        }
+
+
+        .engix-ads-intro-image-wrap img {
           width: 100%;
 
           height: 100%;
 
+          display: block;
+
           object-fit: cover;
         }
 
-        .engix-solutions-company-copy h2 {
-          max-width: 680px;
 
-          margin: 20px 0 0;
+        .engix-ads-intro-image-wrap::after {
+          content: '';
+
+          position: absolute;
+
+          inset: 0;
+
+          background:
+            linear-gradient(
+              90deg,
+              rgba(10,14,18,.72),
+              rgba(10,14,18,.05)
+            );
+        }
+
+
+        .engix-ads-intro-overlay {
+          position: absolute;
+
+          z-index: 2;
+
+          left: 45px;
+
+          bottom: 42px;
+
+          max-width: 530px;
+
+          color: white;
+        }
+
+
+        .engix-ads-intro-overlay span {
+          display: block;
+
+          margin-bottom: 13px;
+
+          font-size: 15px;
+
+          font-weight: 800;
+
+          letter-spacing: .09em;
+        }
+
+
+        .engix-ads-intro-overlay strong {
+          display: block;
+
+          font-size:
+            clamp(
+              2.8rem,
+              4.3vw,
+              4.7rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.05em;
+
+          font-weight: 560;
+        }
+
+
+
+        /* =====================================================
+           SHARED SECTION HEADINGS
+        ====================================================== */
+
+        .engix-ads-heading {
+          max-width: 880px;
+
+          margin-bottom: 50px;
+        }
+
+
+        .engix-ads-heading h2 {
+          margin:
+            12px 0 11px;
+
+          font-size:
+            clamp(
+              2.8rem,
+              4.6vw,
+              5rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.055em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-heading p {
+          max-width: 760px;
+
+          margin: 0;
+
+          color: #565c63;
+
+          font-size: 19px;
+
+          line-height: 1.65;
+        }
+
+
+
+        /* =====================================================
+           SERVICES
+           
+           THIS IS THE TYPOGRAPHY YOU WERE
+           SPECIFICALLY TALKING ABOUT.
+        ====================================================== */
+
+        .engix-ads-services {
+          padding:
+            105px 0;
+
+          background:
+            white;
+        }
+
+
+        .engix-ads-services-grid {
+          display: grid;
+
+          grid-template-columns:
+            repeat(2,1fr);
+
+          gap: 18px;
+        }
+
+
+        .engix-ads-services-grid article {
+          min-height: 410px;
+
+          padding: 34px;
+
+          display: flex;
+
+          flex-direction: column;
+
+          border:
+            1px solid var(--line);
+
+          border-radius: 18px;
+
+          background: white;
+
+          transition:
+            transform .22s ease,
+            box-shadow .22s ease;
+        }
+
+
+        .engix-ads-services-grid article:hover {
+          transform:
+            translateY(-4px);
+
+          box-shadow:
+            0 20px 50px
+            rgba(0,0,0,.05);
+        }
+
+
+        .engix-ads-service-icon {
+          width: 59px;
+
+          height: 59px;
+
+          display: grid;
+
+          place-items: center;
+
+          border-radius: 12px;
+
+          background:
+            var(--blue);
+
+          color:
+            var(--blue-deep);
+        }
+
+
+        .engix-ads-services-grid h3 {
+          margin:
+            28px 0 14px;
+
+          font-size:
+            clamp(
+              2rem,
+              2.7vw,
+              2.8rem
+            );
+
+          line-height: 1.05;
+
+          letter-spacing: -.04em;
+        }
+
+
+        /*
+          MAIN SERVICE DESCRIPTION
+
+          EXAMPLE:
+          "Rank on Google and get found by
+          customers already searching for you."
+        */
+
+        .engix-service-description,
+        .engix-ads-services-grid article > p {
+          max-width: 590px;
+
+          margin: 0;
+
+          color: #50565d;
+
+          font-size: 20px;
+
+          line-height: 1.62;
+
+          font-weight: 400;
+        }
+
+
+        /*
+          SMALL SERVICE BENEFITS
+
+          EXAMPLES:
+          Search visibility
+          Technical SEO
+          On-page optimization
+          Local SEO
+        */
+
+        .engix-ads-service-points {
+          display: grid;
+
+          grid-template-columns:
+            repeat(2,1fr);
+
+          gap:
+            13px 18px;
+
+          margin-top: 28px;
+        }
+
+
+        .engix-ads-service-points span {
+          display: flex;
+
+          align-items: center;
+
+          gap: 9px;
+
+          color: #444a50;
+
+          font-size: 17px;
+
+          line-height: 1.5;
+
+          font-weight: 500;
+        }
+
+
+        .engix-ads-service-points svg {
+          color: var(--green);
+
+          flex-shrink: 0;
+        }
+
+
+        .engix-ads-services-grid article > a {
+          width: max-content;
+
+          margin-top: auto;
+
+          padding-top: 31px;
+
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 8px;
 
           color: var(--ink);
 
-          font-size: clamp(3rem,4.7vw,5rem);
+          text-decoration: none;
 
-          line-height: .97;
+          font-size: 15px;
 
-          letter-spacing: -.06em;
-
-          font-weight: 600;
+          font-weight: 700;
         }
 
-        .engix-solutions-company-copy > p {
-          max-width: 640px;
 
-          margin: 24px 0 0;
 
-          color: var(--gray);
+        /* =====================================================
+           WEBSITE DEVELOPMENT
+        ====================================================== */
+
+        .engix-ads-web {
+          padding:
+            20px 0 105px;
+
+          background:
+            white;
+        }
+
+
+        .engix-ads-web-grid {
+          display: grid;
+
+          grid-template-columns:
+            1fr 1fr;
+
+          border:
+            1px solid var(--line);
+
+          border-radius: 20px;
+
+          overflow: hidden;
+        }
+
+
+        .engix-ads-web-image {
+          min-height: 570px;
+        }
+
+
+        .engix-ads-web-image img {
+          width: 100%;
+
+          height: 100%;
+
+          min-height: 570px;
+
+          display: block;
+
+          object-fit: cover;
+        }
+
+
+        .engix-ads-web-copy {
+          padding:
+            59px 50px;
+
+          background:
+            var(--light);
+        }
+
+
+        .engix-ads-web-copy > span {
+          font-size: 15px;
+        }
+
+
+        .engix-ads-web-copy h2 {
+          margin:
+            15px 0 22px;
+
+          font-size:
+            clamp(
+              2.7rem,
+              4vw,
+              4.45rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.055em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-web-copy > p {
+          color: #50565c;
+
+          font-size: 19px;
+
+          line-height: 1.7;
+
+          font-weight: 400;
+        }
+
+
+        .engix-ads-web-copy > div {
+          display: grid;
+
+          gap: 14px;
+
+          margin-top: 27px;
+        }
+
+
+        .engix-ads-web-copy > div span {
+          display: flex;
+
+          align-items: center;
+
+          gap: 10px;
+
+          color: #444a50;
+
+          font-size: 17px;
+
+          line-height: 1.5;
+
+          font-weight: 500;
+        }
+
+
+        .engix-ads-web-copy > div svg {
+          color: var(--green);
+
+          flex-shrink: 0;
+        }
+
+
+        .engix-ads-web-copy > a {
+          width: max-content;
+
+          min-height: 54px;
+
+          margin-top: 31px;
+
+          padding:
+            0 21px;
+
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 9px;
+
+          border-radius: 8px;
+
+          background: var(--ink);
+
+          color: white;
+
+          text-decoration: none;
+
+          font-size: 15px;
+
+          font-weight: 700;
+        }
+
+
+
+        /* =====================================================
+           PROCESS
+        ====================================================== */
+
+        .engix-ads-process {
+          padding:
+            105px 0;
+
+          background:
+            var(--light);
+        }
+
+
+        .engix-ads-process-list {
+          border-top:
+            1px solid var(--line);
+        }
+
+
+        .engix-ads-process-list article {
+          padding:
+            31px 0;
+
+          display: grid;
+
+          grid-template-columns:
+            64px 1fr;
+
+          gap: 22px;
+
+          align-items: start;
+
+          border-bottom:
+            1px solid var(--line);
+        }
+
+
+        .engix-ads-process-list article > span {
+          width: 47px;
+
+          height: 47px;
+
+          display: grid;
+
+          place-items: center;
+
+          border-radius: 50%;
+
+          background: var(--blue);
+
+          color: var(--blue-deep);
+
+          font-size: 17px;
+
+          font-weight: 750;
+        }
+
+
+        .engix-ads-process-list h3 {
+          margin: 0;
+
+          font-size: 24px;
+
+          line-height: 1.3;
+        }
+
+
+        .engix-ads-process-list p {
+          max-width: 900px;
+
+          margin:
+            9px 0 0;
+
+          color: #50565d;
+
+          font-size: 19px;
+
+          line-height: 1.65;
+
+          font-weight: 400;
+        }
+
+
+
+        /* =====================================================
+           CLIENT RESULTS
+        ====================================================== */
+
+        .engix-ads-results {
+          padding:
+            105px 0;
+
+          background:
+            white;
+        }
+
+
+        .engix-ads-results-grid {
+          display: grid;
+
+          grid-template-columns:
+            repeat(3,1fr);
+
+          gap: 18px;
+        }
+
+
+        .engix-ads-results-grid article {
+          min-height: 430px;
+
+          padding: 32px;
+
+          display: flex;
+
+          flex-direction: column;
+
+          border:
+            1px solid var(--line);
+
+          border-radius: 18px;
+
+          background: white;
+        }
+
+
+        .engix-ads-result-location {
+          display: flex;
+
+          align-items: center;
+
+          gap: 8px;
+
+          color: var(--blue-deep);
+
+          font-size: 15px;
+
+          font-weight: 700;
+        }
+
+
+        .engix-ads-result-company {
+          margin-top: 31px;
+
+          color: #676d73;
 
           font-size: 14px;
 
-          line-height: 1.78;
+          line-height: 1.3;
+
+          font-weight: 800;
+
+          letter-spacing: .07em;
+
+          text-transform: uppercase;
         }
 
-        .engix-solutions-company-copy > a {
+
+        .engix-ads-results-grid h3 {
+          margin:
+            13px 0 16px;
+
+          font-size: 29px;
+
+          line-height: 1.08;
+
+          letter-spacing: -.035em;
+        }
+
+
+        .engix-ads-results-grid p {
+          margin: 0;
+
+          color: #50565d;
+
+          font-size: 18px;
+
+          line-height: 1.68;
+
+          font-weight: 400;
+        }
+
+
+        .engix-ads-result-tags {
+          display: flex;
+
+          flex-wrap: wrap;
+
+          gap: 8px;
+
+          margin-top: auto;
+
+          padding-top: 31px;
+        }
+
+
+        .engix-ads-result-tags span {
+          padding:
+            8px 11px;
+
+          background:
+            #f3f4f5;
+
+          color: #4d5359;
+
+          font-size: 14px;
+        }
+
+
+        .engix-ads-result-link {
           width: max-content;
 
           margin-top: 30px;
@@ -3479,72 +3827,436 @@ export default function Solutions() {
 
           align-items: center;
 
-          gap: 7px;
+          gap: 8px;
 
           color: var(--ink);
 
           text-decoration: none;
 
-          font-size: 12px;
+          font-size: 16px;
 
-          font-weight: 750;
-
-          padding-bottom: 4px;
-
-          border-bottom: 1px solid var(--ink);
+          font-weight: 700;
         }
+
+
+
+        /* =====================================================
+           WHY ENGIX
+        ====================================================== */
+
+        .engix-ads-why {
+          padding:
+            105px 0;
+
+          background:
+            var(--light);
+        }
+
+
+        .engix-ads-why-grid {
+          display: grid;
+
+          grid-template-columns:
+            .9fr 1.1fr;
+
+          gap: 86px;
+        }
+
+
+        .engix-ads-why-grid h2 {
+          max-width: 610px;
+
+          margin:
+            15px 0 0;
+
+          font-size:
+            clamp(
+              2.9rem,
+              4.6vw,
+              5rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.055em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-why-list {
+          border-top:
+            1px solid var(--line);
+        }
+
+
+        .engix-ads-why-list article {
+          padding:
+            29px 0;
+
+          display: grid;
+
+          grid-template-columns:
+            54px 1fr;
+
+          gap: 19px;
+
+          border-bottom:
+            1px solid var(--line);
+        }
+
+
+        .engix-ads-why-list svg {
+          color:
+            var(--blue-deep);
+        }
+
+
+        .engix-ads-why-list h3 {
+          margin: 0;
+
+          font-size: 24px;
+
+          line-height: 1.3;
+        }
+
+
+        .engix-ads-why-list p {
+          max-width: 650px;
+
+          margin:
+            9px 0 0;
+
+          color: #50565d;
+
+          font-size: 18px;
+
+          line-height: 1.68;
+
+          font-weight: 400;
+        }
+
+
+
+        /* =====================================================
+           PARTNERSHIP
+        ====================================================== */
+
+        .engix-ads-partnership {
+          padding:
+            105px 0;
+
+          background:
+            white;
+        }
+
+
+        .engix-ads-partnership-grid {
+          display: grid;
+
+          grid-template-columns:
+            .9fr 1.1fr;
+
+          align-items: stretch;
+
+          border:
+            1px solid var(--line);
+
+          border-radius: 20px;
+
+          overflow: hidden;
+        }
+
+
+        .engix-ads-partnership-copy {
+          padding:
+            58px 50px;
+
+          display: flex;
+
+          flex-direction: column;
+
+          justify-content: center;
+
+          background:
+            var(--light);
+        }
+
+
+        .engix-ads-partnership-copy h2 {
+          margin:
+            15px 0 21px;
+
+          font-size:
+            clamp(
+              2.7rem,
+              4vw,
+              4.5rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.055em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-partnership-copy p {
+          margin: 0;
+
+          color: #50565d;
+
+          font-size: 19px;
+
+          line-height: 1.7;
+
+          font-weight: 400;
+        }
+
+
+        .engix-ads-partnership-copy a {
+          width: max-content;
+
+          min-height: 54px;
+
+          margin-top: 31px;
+
+          padding:
+            0 21px;
+
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 8px;
+
+          border-radius: 8px;
+
+          background: var(--ink);
+
+          color: white;
+
+          text-decoration: none;
+
+          font-size: 15px;
+
+          font-weight: 700;
+        }
+
+
+        .engix-ads-partnership-image {
+          min-height: 540px;
+        }
+
+
+        .engix-ads-partnership-image img {
+          width: 100%;
+
+          height: 100%;
+
+          min-height: 540px;
+
+          display: block;
+
+          object-fit: cover;
+        }
+
+
+
+        /* =====================================================
+           BOTTOM ENQUIRY
+        ====================================================== */
+
+        .engix-ads-bottom-enquiry {
+          padding:
+            105px 0;
+
+          background:
+            white;
+        }
+
+
+        .engix-ads-bottom-grid {
+          display: grid;
+
+          grid-template-columns:
+            .85fr 1.15fr;
+
+          gap: 75px;
+
+          align-items: start;
+        }
+
+
+        .engix-ads-bottom-copy {
+          position: sticky;
+
+          top: 105px;
+        }
+
+
+        .engix-ads-bottom-copy h2 {
+          max-width: 600px;
+
+          margin:
+            15px 0 21px;
+
+          font-size:
+            clamp(
+              3rem,
+              4.65vw,
+              5rem
+            );
+
+          line-height: .97;
+
+          letter-spacing: -.055em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-bottom-copy > p {
+          max-width: 610px;
+
+          margin:
+            0 0 17px;
+
+          color: #50565d;
+
+          font-size: 19px;
+
+          line-height: 1.7;
+
+          font-weight: 400;
+        }
+
+
+        .engix-ads-bottom-contact {
+          display: grid;
+
+          gap: 0;
+
+          margin-top: 33px;
+        }
+
+
+        .engix-ads-bottom-contact > a {
+          padding:
+            18px 0;
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 14px;
+
+          border-bottom:
+            1px solid var(--line);
+
+          color: var(--ink);
+
+          text-decoration: none;
+        }
+
+
+        .engix-ads-bottom-contact svg {
+          color:
+            var(--blue-deep);
+
+          flex-shrink: 0;
+        }
+
+
+        .engix-ads-bottom-contact small,
+        .engix-ads-bottom-contact strong {
+          display: block;
+        }
+
+
+        .engix-ads-bottom-contact small {
+          color: #676d73;
+
+          font-size: 13px;
+
+          font-weight: 800;
+
+          letter-spacing: .06em;
+        }
+
+
+        .engix-ads-bottom-contact strong {
+          margin-top: 5px;
+
+          font-size: 17px;
+        }
+
 
 
         /* =====================================================
            FAQ
         ====================================================== */
 
-        .engix-solutions-faq {
-          padding: 120px 0;
+        .engix-ads-faq {
+          padding:
+            105px 0;
 
-          background: white;
-
-          border-top: 1px solid var(--line);
+          background:
+            var(--light);
         }
 
-        .engix-solutions-faq-grid {
+
+        .engix-ads-faq-grid {
           display: grid;
 
-          grid-template-columns: .75fr 1.25fr;
+          grid-template-columns:
+            .7fr 1.3fr;
 
           gap: 90px;
         }
 
-        .engix-solutions-faq-grid h2 {
-          margin: 20px 0 0;
 
-          color: var(--ink);
+        .engix-ads-faq-grid h2 {
+          margin:
+            15px 0 0;
 
-          font-size: clamp(3rem,4.8vw,5rem);
+          font-size:
+            clamp(
+              2.8rem,
+              4.4vw,
+              4.7rem
+            );
 
-          line-height: .97;
+          line-height: .98;
 
-          letter-spacing: -.06em;
+          letter-spacing: -.05em;
 
-          font-weight: 600;
+          font-weight: 560;
         }
 
-        .engix-solutions-faq-list details {
-          border-top: 1px solid var(--line);
+
+        .engix-ads-faq-list {
+          border-top:
+            1px solid var(--line);
         }
 
-        .engix-solutions-faq-list details:last-child {
-          border-bottom: 1px solid var(--line);
+
+        .engix-ads-faq-list details {
+          border-bottom:
+            1px solid var(--line);
         }
 
-        .engix-solutions-faq-list summary {
-          min-height: 78px;
+
+        .engix-ads-faq-list summary {
+          min-height: 82px;
 
           display: flex;
 
           align-items: center;
 
-          justify-content: space-between;
+          justify-content:
+            space-between;
 
           gap: 20px;
 
@@ -3552,293 +4264,1405 @@ export default function Solutions() {
 
           list-style: none;
 
-          color: var(--ink);
+          font-size: 20px;
 
-          font-size: 15px;
-
-          font-weight: 650;
+          font-weight: 700;
         }
 
-        .engix-solutions-faq-list summary::-webkit-details-marker {
+
+        .engix-ads-faq-list summary::-webkit-details-marker {
           display: none;
         }
 
-        .engix-solutions-faq-list summary svg {
-          flex-shrink: 0;
 
-          transition: transform .2s ease;
+        .engix-ads-faq-list details p {
+          max-width: 760px;
+
+          margin:
+            0 0 29px;
+
+          color: #50565d;
+
+          font-size: 18px;
+
+          line-height: 1.72;
+
+          font-weight: 400;
         }
 
-        .engix-solutions-faq-list details[open] summary svg {
-          transform: rotate(180deg);
+
+        .engix-ads-faq-list details[open] svg {
+          transform:
+            rotate(180deg);
         }
 
-        .engix-solutions-faq-list details p {
-          max-width: 720px;
-
-          margin: 0;
-
-          padding: 0 0 28px;
-
-          color: var(--gray);
-
-          font-size: 13px;
-
-          line-height: 1.75;
-        }
 
 
         /* =====================================================
            FINAL CTA
         ====================================================== */
 
-        .engix-solutions-final {
-          position: relative;
+        .engix-ads-final {
+          padding:
+            88px 0;
 
-          padding: 110px 0;
-
-          background: white;
-
-          border-top: 1px solid var(--line);
+          background:
+            white;
         }
 
-        .engix-solutions-final::before {
+
+        .engix-ads-final-inner {
+          text-align: center;
+        }
+
+
+        .engix-ads-final h2 {
+          max-width: 820px;
+
+          margin:
+            14px auto;
+
+          font-size:
+            clamp(
+              3rem,
+              4.5vw,
+              5rem
+            );
+
+          line-height: .98;
+
+          letter-spacing: -.05em;
+
+          font-weight: 560;
+        }
+
+
+        .engix-ads-final p {
+          max-width: 720px;
+
+          margin: 0 auto;
+
+          color: #50565d;
+
+          font-size: 19px;
+
+          line-height: 1.65;
+        }
+
+
+        .engix-ads-final-inner > div {
+          margin-top: 29px;
+
+          display: flex;
+
+          justify-content: center;
+
+          flex-wrap: wrap;
+
+          gap: 11px;
+        }
+
+
+        .engix-ads-final-primary,
+        .engix-ads-final-secondary {
+          min-height: 55px;
+
+          padding:
+            0 22px;
+
+          display: inline-flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 9px;
+
+          border-radius: 8px;
+
+          text-decoration: none;
+
+          font-size: 15px;
+
+          font-weight: 700;
+        }
+
+
+        .engix-ads-final-primary {
+          background: var(--ink);
+
+          color: white;
+        }
+
+
+        .engix-ads-final-secondary {
+          border:
+            1px solid var(--line);
+
+          color:
+            var(--ink);
+        }
+
+
+
+        /* =====================================================
+           PREMIUM LANDING PAGE FOOTER
+        ====================================================== */
+
+        .engix-ads-footer {
+          position: relative;
+
+          overflow: hidden;
+
+          padding:
+            34px 0 28px;
+
+          background:
+            #050505;
+
+          color:
+            #ffffff;
+
+          border-top:
+            1px solid
+            rgba(255,255,255,.08);
+        }
+
+
+        .engix-ads-footer::before {
           content: '';
 
           position: absolute;
 
-          top: 0;
+          top: -320px;
+          right: -180px;
 
-          left: 50%;
-
-          width: min(1240px,calc(100% - 56px));
-
-          height: 5px;
-
-          transform: translateX(-50%);
-
-          background: var(--yellow);
-        }
-
-        .engix-solutions-final-grid {
-          display: grid;
-
-          grid-template-columns: 1.4fr .6fr;
-
-          gap: 80px;
-
-          align-items: end;
-        }
-
-        .engix-solutions-final h2 {
-          max-width: 900px;
-
-          margin: 20px 0 0;
-
-          color: var(--ink);
-
-          font-size: clamp(3.3rem,5.5vw,5.8rem);
-
-          line-height: .95;
-
-          letter-spacing: -.065em;
-
-          font-weight: 600;
-        }
-
-        .engix-solutions-final p {
-          max-width: 650px;
-
-          margin: 26px 0 0;
-
-          color: var(--gray);
-
-          font-size: 14px;
-
-          line-height: 1.75;
-        }
-
-        .engix-solutions-final-btn {
-          justify-self: end;
-
-          min-height: 59px;
-
-          padding: 7px 8px 7px 22px;
-
-          display: inline-flex;
-
-          align-items: center;
-
-          gap: 14px;
-
-          border-radius: 999px;
-
-          background: var(--black);
-
-          color: white;
-
-          text-decoration: none;
-
-          font-size: 13px;
-
-          font-weight: 750;
-        }
-
-        .engix-solutions-final-btn > span {
-          width: 42px;
-
-          height: 42px;
-
-          display: grid;
-
-          place-items: center;
+          width: 560px;
+          height: 560px;
 
           border-radius: 50%;
 
-          background: var(--yellow);
+          background:
+            radial-gradient(
+              circle,
+              rgba(250,199,31,.12),
+              rgba(250,199,31,.025) 48%,
+              transparent 70%
+            );
 
-          color: var(--black);
+          pointer-events: none;
         }
+
+
+        .engix-ads-footer::after {
+          content: '';
+
+          position: absolute;
+
+          bottom: -360px;
+          left: -200px;
+
+          width: 520px;
+          height: 520px;
+
+          border-radius: 50%;
+
+          background:
+            radial-gradient(
+              circle,
+              rgba(255,255,255,.045),
+              transparent 67%
+            );
+
+          pointer-events: none;
+        }
+
+
+        .engix-ads-footer > .engix-ads-shell {
+          position: relative;
+
+          z-index: 2;
+        }
+
 
 
         /* =====================================================
-           FOOTER
+           FOOTER CTA
         ====================================================== */
 
-        .engix-solutions-footer {
-          padding: 80px 0 28px;
+        .engix-ads-footer-cta {
+          padding:
+            48px;
 
-          background: white;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-footer-main {
           display: grid;
 
-          grid-template-columns: 1.4fr .7fr .9fr 1fr;
-
-          gap: 60px;
-
-          padding-bottom: 60px;
-        }
-
-        .engix-solutions-footer-logo {
-          width: max-content;
-
-          display: inline-flex;
+          grid-template-columns:
+            minmax(0,1fr)
+            auto;
 
           align-items: center;
 
-          gap: 8px;
+          gap: 55px;
 
-          color: var(--ink);
+          border:
+            1px solid
+            rgba(255,255,255,.11);
 
-          text-decoration: none;
+          border-radius:
+            22px;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255,255,255,.075),
+              rgba(255,255,255,.022)
+            );
+
+          box-shadow:
+            inset
+            0 1px 0
+            rgba(255,255,255,.06);
         }
 
-        .engix-solutions-footer-logo span {
-          font-size: 35px;
+
+        .engix-ads-footer-cta-copy {
+          max-width:
+            800px;
         }
 
-        .engix-solutions-footer-logo strong {
-          font-size: 24px;
 
-          letter-spacing: -.04em;
+        .engix-ads-footer-eyebrow {
+          display: block;
+
+          margin-bottom:
+            15px;
+
+          color:
+            #f5ca2d;
+
+          font-size:
+            13px;
+
+          line-height:
+            1.2;
+
+          font-weight:
+            800;
+
+          letter-spacing:
+            .11em;
         }
 
-        .engix-solutions-footer-main > div:first-child > p {
-          max-width: 360px;
 
-          margin: 20px 0 0;
-
-          color: var(--gray);
-
-          font-size: 12px;
-
-          line-height: 1.7;
-        }
-
-        .engix-solutions-footer-main > div:not(:first-child) {
-          display: flex;
-
-          flex-direction: column;
-
-          align-items: flex-start;
-
-          gap: 10px;
-        }
-
-        .engix-solutions-footer-main h4 {
-          margin: 0 0 8px;
-
-          color: var(--ink);
-
-          font-size: 11px;
-        }
-
-        .engix-solutions-footer-main a {
-          color: #6c6e74;
-
-          text-decoration: none;
-
-          font-size: 11px;
-
-          line-height: 1.6;
-        }
-
-        .engix-solutions-address {
-          display: flex;
-
-          gap: 8px;
-
-          color: #6c6e74;
-
-          font-size: 10px;
-
-          line-height: 1.6;
-        }
-
-        .engix-solutions-address svg {
-          flex-shrink: 0;
-
-          margin-top: 2px;
-        }
-
-        .engix-solutions-footer-bottom {
-          padding-top: 24px;
-
-          display: flex;
-
-          align-items: center;
-
-          justify-content: space-between;
-
-          gap: 25px;
-
-          border-top: 1px solid var(--line);
-        }
-
-        .engix-solutions-footer-bottom p {
+        .engix-ads-footer-cta h2 {
           margin: 0;
 
-          color: #898a90;
+          max-width:
+            790px;
 
-          font-size: 10px;
+          color:
+            #ffffff;
+
+          font-size:
+            clamp(
+              2.6rem,
+              4.2vw,
+              4.75rem
+            );
+
+          line-height:
+            .98;
+
+          letter-spacing:
+            -.055em;
+
+          font-weight:
+            560;
         }
 
-        .engix-solutions-footer-bottom > div {
+
+        .engix-ads-footer-cta p {
+          max-width:
+            680px;
+
+          margin:
+            20px 0 0;
+
+          color:
+            rgba(255,255,255,.64);
+
+          font-size:
+            17px;
+
+          line-height:
+            1.72;
+        }
+
+
+        .engix-ads-footer-cta-actions {
+          min-width:
+            240px;
+
           display: flex;
 
-          gap: 20px;
+          flex-direction:
+            column;
+
+          gap:
+            11px;
         }
 
-        .engix-solutions-footer-bottom a {
-          color: #898a90;
 
-          text-decoration: none;
+        .engix-ads-footer-primary,
+        .engix-ads-footer-secondary {
+          min-height:
+            56px;
 
-          font-size: 10px;
+          padding:
+            0 21px;
+
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          gap:
+            9px;
+
+          border-radius:
+            9px;
+
+          text-decoration:
+            none;
+
+          font-size:
+            14px;
+
+          font-weight:
+            750;
+
+          transition:
+            transform .2s ease,
+            background .2s ease,
+            border-color .2s ease,
+            box-shadow .2s ease;
+        }
+
+
+        .engix-ads-footer-primary {
+          background:
+            #f5ca2d;
+
+          color:
+            #090a0c;
+        }
+
+
+        .engix-ads-footer-primary:hover {
+          transform:
+            translateY(-2px);
+
+          background:
+            #ffd840;
+
+          box-shadow:
+            0 13px 30px
+            rgba(245,202,45,.15);
+        }
+
+
+        .engix-ads-footer-secondary {
+          border:
+            1px solid
+            rgba(255,255,255,.18);
+
+          background:
+            rgba(255,255,255,.035);
+
+          color:
+            #ffffff;
+        }
+
+
+        .engix-ads-footer-secondary:hover {
+          transform:
+            translateY(-2px);
+
+          border-color:
+            rgba(255,255,255,.34);
+
+          background:
+            rgba(255,255,255,.07);
+        }
+
+
+
+        /* =====================================================
+           MAIN FOOTER GRID
+        ====================================================== */
+
+        .engix-ads-footer-main {
+          display: grid;
+
+          grid-template-columns:
+            1.45fr
+            .72fr
+            .72fr
+            1.12fr;
+
+          gap:
+            50px;
+
+          padding:
+            72px 0 60px;
+        }
+
+
+
+        /* =====================================================
+           BRAND
+        ====================================================== */
+
+        .engix-ads-footer-brand {
+          max-width:
+            440px;
+        }
+
+
+        .engix-ads-footer-logo {
+          width:
+            max-content;
+
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          gap:
+            11px;
+
+          color:
+            #ffffff;
+
+          text-decoration:
+            none;
+
+          flex-shrink:
+            0;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .engix-ads-footer-logo-icon {
+          width:
+            54px;
+
+          height:
+            54px;
+
+          min-width:
+            54px;
+
+          min-height:
+            54px;
+
+          max-width:
+            54px;
+
+          max-height:
+            54px;
+
+          flex:
+            0 0 54px;
+
+          display:
+            flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          overflow:
+            hidden;
+
+          margin: 0;
+
+          padding: 0;
+
+          background:
+            #050505;
+
+          border:
+            none;
+
+          border-radius:
+            0;
+
+          box-shadow:
+            none;
+        }
+
+
+        .engix-ads-footer-logo-image {
+          width:
+            100%;
+
+          height:
+            100%;
+
+          max-width:
+            54px;
+
+          max-height:
+            54px;
+
+          display:
+            block;
+
+          object-fit:
+            contain;
+
+          object-position:
+            center;
+
+          margin: 0;
+
+          padding: 0;
+
+          border: 0;
+
+          background:
+            #050505;
+        }
+
+
+        .engix-ads-footer-logo-name {
+          margin: 0;
+
+          color:
+            #ffffff;
+
+          font-size:
+            29px;
+
+          line-height:
+            1;
+
+          font-weight:
+            760;
+
+          letter-spacing:
+            -.045em;
+        }
+
+
+        .engix-ads-footer-description {
+          max-width:
+            420px;
+
+          margin:
+            27px 0 0;
+
+          color:
+            rgba(255,255,255,.62);
+
+          font-size:
+            16px;
+
+          line-height:
+            1.75;
+        }
+
+
+
+        /* =====================================================
+           TRUST
+        ====================================================== */
+
+        .engix-ads-footer-trust {
+          display: flex;
+
+          flex-wrap:
+            wrap;
+
+          gap:
+            11px 17px;
+
+          margin-top:
+            26px;
+        }
+
+
+        .engix-ads-footer-trust span {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          gap:
+            7px;
+
+          color:
+            rgba(255,255,255,.7);
+
+          font-size:
+            13px;
+
+          line-height:
+            1.45;
+        }
+
+
+        .engix-ads-footer-trust svg {
+          color:
+            #f5ca2d;
+
+          flex-shrink:
+            0;
+        }
+
+
+
+        /* =====================================================
+           FOOTER COLUMNS
+        ====================================================== */
+
+        .engix-ads-footer-column {
+          display: flex;
+
+          flex-direction:
+            column;
+
+          align-items:
+            flex-start;
+
+          gap:
+            13px;
+        }
+
+
+        .engix-ads-footer-column-title {
+          margin-bottom:
+            10px;
+
+          color:
+            #ffffff;
+
+          font-size:
+            13px;
+
+          line-height:
+            1.2;
+
+          font-weight:
+            800;
+
+          letter-spacing:
+            .1em;
+
+          text-transform:
+            uppercase;
+        }
+
+
+        .engix-ads-footer-column > a {
+          color:
+            rgba(255,255,255,.61);
+
+          text-decoration:
+            none;
+
+          font-size:
+            15px;
+
+          line-height:
+            1.52;
+
+          transition:
+            color .2s ease,
+            transform .2s ease;
+        }
+
+
+        .engix-ads-footer-column > a:hover {
+          color:
+            #ffffff;
+
+          transform:
+            translateX(3px);
+        }
+
+
+
+        /* =====================================================
+           CONTACT
+        ====================================================== */
+
+        .engix-ads-footer-contact {
+          gap:
+            7px;
+        }
+
+
+        .engix-ads-footer-contact > a,
+        .engix-ads-footer-location {
+          width:
+            100%;
+
+          box-sizing:
+            border-box;
+
+          display:
+            grid;
+
+          grid-template-columns:
+            39px
+            minmax(0,1fr);
+
+          align-items:
+            center;
+
+          gap:
+            12px;
+
+          padding:
+            8px 0;
+
+          color:
+            rgba(255,255,255,.7);
+
+          text-decoration:
+            none;
+        }
+
+
+        .engix-ads-footer-contact > a:hover {
+          color:
+            #ffffff;
+
+          transform:
+            none;
+        }
+
+
+        .engix-ads-footer-contact-icon {
+          width:
+            37px;
+
+          height:
+            37px;
+
+          display:
+            grid;
+
+          place-items:
+            center;
+
+          border:
+            1px solid
+            rgba(245,202,45,.2);
+
+          border-radius:
+            10px;
+
+          background:
+            rgba(245,202,45,.07);
+
+          color:
+            #f5ca2d;
+        }
+
+
+        .engix-ads-footer-contact-copy {
+          display:
+            flex;
+
+          min-width:
+            0;
+
+          flex-direction:
+            column;
+
+          gap:
+            3px;
+        }
+
+
+        .engix-ads-footer-contact-copy small {
+          color:
+            rgba(255,255,255,.38);
+
+          font-size:
+            10px;
+
+          line-height:
+            1.2;
+
+          font-weight:
+            800;
+
+          letter-spacing:
+            .09em;
+        }
+
+
+        .engix-ads-footer-contact-copy strong {
+          color:
+            rgba(255,255,255,.75);
+
+          font-size:
+            14px;
+
+          line-height:
+            1.45;
+
+          font-weight:
+            550;
+
+          overflow-wrap:
+            anywhere;
+        }
+
+
+        .engix-ads-footer-contact > a:hover
+        .engix-ads-footer-contact-copy strong {
+          color:
+            #ffffff;
+        }
+
+
+
+        /* =====================================================
+           CREDIBILITY STRIP
+        ====================================================== */
+
+        .engix-ads-footer-proof {
+          display: grid;
+
+          grid-template-columns:
+            repeat(4,1fr);
+
+          border-top:
+            1px solid
+            rgba(255,255,255,.1);
+
+          border-bottom:
+            1px solid
+            rgba(255,255,255,.1);
+        }
+
+
+        .engix-ads-footer-proof > div {
+          min-height:
+            112px;
+
+          padding:
+            21px;
+
+          box-sizing:
+            border-box;
+
+          display:
+            flex;
+
+          flex-direction:
+            column;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          text-align:
+            center;
+
+          border-right:
+            1px solid
+            rgba(255,255,255,.1);
+        }
+
+
+        .engix-ads-footer-proof > div:last-child {
+          border-right: 0;
+        }
+
+
+        .engix-ads-footer-proof strong {
+          color:
+            #ffffff;
+
+          font-size:
+            21px;
+
+          line-height:
+            1.25;
+
+          font-weight:
+            720;
+        }
+
+
+        .engix-ads-footer-proof span {
+          margin-top:
+            6px;
+
+          color:
+            rgba(255,255,255,.45);
+
+          font-size:
+            13px;
+
+          line-height:
+            1.4;
+        }
+
+
+
+        /* =====================================================
+           BOTTOM
+        ====================================================== */
+
+        .engix-ads-footer-bottom {
+          min-height:
+            78px;
+
+          display: grid;
+
+          grid-template-columns:
+            1fr
+            auto
+            1fr;
+
+          align-items:
+            center;
+
+          gap:
+            24px;
+        }
+
+
+        .engix-ads-footer-bottom p {
+          margin: 0;
+
+          color:
+            rgba(255,255,255,.4);
+
+          font-size:
+            12px;
+
+          line-height:
+            1.5;
+        }
+
+
+        .engix-ads-footer-availability {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          gap:
+            9px;
+
+          color:
+            rgba(255,255,255,.52);
+
+          font-size:
+            12px;
+        }
+
+
+        .engix-ads-footer-status-dot {
+          width:
+            7px;
+
+          height:
+            7px;
+
+          border-radius:
+            50%;
+
+          background:
+            #55c66d;
+
+          box-shadow:
+            0 0 0 4px
+            rgba(85,198,109,.09);
+        }
+
+
+        .engix-ads-footer-bottom-links {
+          justify-self:
+            end;
+
+          display: flex;
+
+          align-items:
+            center;
+
+          gap:
+            19px;
+        }
+
+
+        .engix-ads-footer-bottom-links a {
+          color:
+            rgba(255,255,255,.48);
+
+          text-decoration:
+            none;
+
+          font-size:
+            12px;
+
+          transition:
+            color .2s ease;
+        }
+
+
+        .engix-ads-footer-bottom-links a:hover {
+          color:
+            #f5ca2d;
+        }
+
+
+
+        /* =====================================================
+           FOOTER TABLET
+        ====================================================== */
+
+        @media (max-width: 1050px) {
+
+          .engix-ads-footer-cta {
+            grid-template-columns:
+              1fr;
+
+            gap:
+              31px;
+          }
+
+
+          .engix-ads-footer-cta-actions {
+            min-width:
+              0;
+
+            width:
+              max-content;
+
+            flex-direction:
+              row;
+          }
+
+
+          .engix-ads-footer-main {
+            grid-template-columns:
+              repeat(2,1fr);
+
+            gap:
+              50px 42px;
+          }
+
+
+          .engix-ads-footer-brand {
+            grid-column:
+              1 / -1;
+
+            max-width:
+              650px;
+          }
+
+
+          .engix-ads-footer-proof {
+            grid-template-columns:
+              repeat(2,1fr);
+          }
+
+
+          .engix-ads-footer-proof > div:nth-child(2) {
+            border-right:
+              0;
+          }
+
+
+          .engix-ads-footer-proof > div:nth-child(-n+2) {
+            border-bottom:
+              1px solid
+              rgba(255,255,255,.1);
+          }
+
+
+          .engix-ads-footer-bottom {
+            grid-template-columns:
+              1fr auto;
+          }
+
+
+          .engix-ads-footer-availability {
+            display:
+              none;
+          }
+
+        }
+
+
+
+        /* =====================================================
+           FOOTER MOBILE
+        ====================================================== */
+
+        @media (max-width: 650px) {
+
+          .engix-ads-footer {
+            padding:
+              20px 0 23px;
+          }
+
+
+          .engix-ads-footer-cta {
+            padding:
+              31px 22px;
+
+            gap:
+              27px;
+
+            border-radius:
+              17px;
+          }
+
+
+          .engix-ads-footer-cta h2 {
+            font-size:
+              clamp(
+                2.35rem,
+                11vw,
+                3.35rem
+              );
+          }
+
+
+          .engix-ads-footer-cta p {
+            font-size:
+              16px;
+          }
+
+
+          .engix-ads-footer-cta-actions {
+            width:
+              100%;
+
+            flex-direction:
+              column;
+          }
+
+
+          .engix-ads-footer-primary,
+          .engix-ads-footer-secondary {
+            width:
+              100%;
+
+            box-sizing:
+              border-box;
+          }
+
+
+          .engix-ads-footer-main {
+            grid-template-columns:
+              1fr;
+
+            gap:
+              41px;
+
+            padding:
+              55px 0 46px;
+          }
+
+
+          .engix-ads-footer-brand {
+            grid-column:
+              auto;
+
+            max-width:
+              100%;
+          }
+
+
+          .engix-ads-footer-logo {
+            gap:
+              8px;
+          }
+
+
+          .engix-ads-footer-logo-icon {
+            width:
+              45px;
+
+            height:
+              45px;
+
+            min-width:
+              45px;
+
+            min-height:
+              45px;
+
+            max-width:
+              45px;
+
+            max-height:
+              45px;
+
+            flex-basis:
+              45px;
+          }
+
+
+          .engix-ads-footer-logo-image {
+            max-width:
+              45px;
+
+            max-height:
+              45px;
+          }
+
+
+          .engix-ads-footer-logo-name {
+            font-size:
+              24px;
+          }
+
+
+          .engix-ads-footer-description {
+            font-size:
+              15px;
+          }
+
+
+          .engix-ads-footer-proof {
+            grid-template-columns:
+              1fr;
+          }
+
+
+          .engix-ads-footer-proof > div {
+            min-height:
+              94px;
+
+            border-right:
+              0;
+
+            border-bottom:
+              1px solid
+              rgba(255,255,255,.1);
+          }
+
+
+          .engix-ads-footer-proof > div:nth-child(2) {
+            border-bottom:
+              1px solid
+              rgba(255,255,255,.1);
+          }
+
+
+          .engix-ads-footer-proof > div:last-child {
+            border-bottom:
+              0;
+          }
+
+
+          .engix-ads-footer-bottom {
+            min-height:
+              auto;
+
+            padding-top:
+              28px;
+
+            grid-template-columns:
+              1fr;
+
+            gap:
+              15px;
+          }
+
+
+          .engix-ads-footer-bottom-links {
+            justify-self:
+              start;
+
+            flex-wrap:
+              wrap;
+          }
+
+        }
+
+
+
+        /* =====================================================
+           FOOTER VERY SMALL MOBILE
+        ====================================================== */
+
+        @media (max-width: 390px) {
+
+          .engix-ads-footer-logo-icon {
+            width:
+              40px;
+
+            height:
+              40px;
+
+            min-width:
+              40px;
+
+            min-height:
+              40px;
+
+            max-width:
+              40px;
+
+            max-height:
+              40px;
+
+            flex-basis:
+              40px;
+          }
+
+
+          .engix-ads-footer-logo-image {
+            max-width:
+              40px;
+
+            max-height:
+              40px;
+          }
+
+
+          .engix-ads-footer-logo-name {
+            font-size:
+              22px;
+          }
+
+
+          .engix-ads-footer-contact > a,
+          .engix-ads-footer-location {
+            grid-template-columns:
+              37px
+              minmax(0,1fr);
+          }
+
         }
 
 
@@ -3846,283 +5670,540 @@ export default function Solutions() {
            TABLET
         ====================================================== */
 
-        @media(max-width:1050px) {
+        @media (max-width: 1050px) {
 
-          .engix-solutions-hero-grid,
-          .engix-solutions-context-grid,
-          .engix-solutions-why-grid,
-          .engix-solutions-company-grid {
-            grid-template-columns: 1fr;
+          .engix-ads-hero-grid {
+            grid-template-columns:
+              1fr;
+
+            gap: 48px;
           }
 
-          .engix-solutions-hero-copy {
-            padding-bottom: 40px;
+
+          .engix-ads-hero-copy {
+            max-width: 920px;
           }
 
-          .engix-solutions-hero-image,
-          .engix-solutions-hero-image > img {
-            min-height: 550px;
 
-            height: 550px;
+          .engix-hero-form-wrap {
+            max-width: 780px;
           }
 
-          .engix-solutions-trust-grid {
-            grid-template-columns: repeat(2,1fr);
+
+          .engix-ads-proof-grid {
+            grid-template-columns:
+              repeat(2,1fr);
           }
 
-          .engix-solutions-service-grid {
-            grid-template-columns: 1fr;
+
+          .engix-ads-proof-grid article:nth-child(2) {
+            border-right: 0;
           }
 
-          .engix-solutions-stack-grid {
-            grid-template-columns: 1fr;
 
-            gap: 50px;
+          .engix-ads-proof-grid article:nth-child(-n+2) {
+            border-bottom:
+              1px solid var(--line);
           }
 
-          .engix-solutions-context-image,
-          .engix-solutions-why-image,
-          .engix-solutions-company-image {
-            height: 520px;
+
+          .engix-ads-results-grid {
+            grid-template-columns:
+              1fr;
           }
 
-          .engix-solutions-work-grid {
-            grid-template-columns: 1fr;
+
+          .engix-ads-results-grid article {
+            min-height: auto;
           }
 
-          .engix-solutions-process-grid {
-            grid-template-columns: repeat(2,1fr);
+
+          .engix-ads-web-grid,
+          .engix-ads-why-grid,
+          .engix-ads-partnership-grid,
+          .engix-ads-bottom-grid,
+          .engix-ads-faq-grid {
+            grid-template-columns:
+              1fr;
+
+            gap: 48px;
           }
 
-          .engix-solutions-consultation-grid,
-          .engix-solutions-faq-grid {
-            grid-template-columns: 1fr;
 
-            gap: 50px;
-          }
-
-          .engix-solutions-consultation-copy {
+          .engix-ads-bottom-copy {
             position: static;
           }
 
-          .engix-solutions-final-grid {
-            grid-template-columns: 1fr;
 
-            gap: 45px;
+          .engix-ads-footer-main {
+            grid-template-columns:
+              1fr 1fr;
           }
 
-          .engix-solutions-final-btn {
-            justify-self: start;
-          }
 
-          .engix-solutions-footer-main {
-            grid-template-columns: repeat(2,1fr);
+          .engix-ads-footer-main > div:first-child {
+            grid-column:
+              1 / -1;
           }
 
         }
+
 
 
         /* =====================================================
            MOBILE HEADER
         ====================================================== */
 
-        @media(max-width:750px) {
+        @media (max-width: 760px) {
 
-          .engix-solutions-shell {
-            width: calc(100% - 32px);
+          .engix-ads-shell {
+            width:
+              calc(100% - 32px);
           }
 
-          .engix-solutions-header-inner {
-            min-height: 70px;
 
-            grid-template-columns: 1fr auto;
+          .engix-ads-header-inner {
+            min-height: 66px;
+
+            grid-template-columns:
+              1fr auto;
           }
 
-          .engix-solutions-nav {
+
+          .engix-ads-nav {
             display: none;
           }
 
-          .engix-solutions-header-btn {
+
+          .engix-ads-header-button {
             min-height: 42px;
 
-            padding: 0 13px;
+            padding:
+              0 12px;
 
-            font-size: 10px;
+            font-size: 11px;
           }
 
-          .engix-solutions-heading-grid {
-            grid-template-columns: 1fr;
 
-            gap: 25px;
+          .engix-ads-header-button svg {
+            width: 16px;
+          }
+
+
+          .engix-small-heading,
+          .engix-ads-heading > span,
+          .engix-lead-heading > span,
+          .engix-ads-web-copy > span {
+            font-size: 13px;
           }
 
         }
+
 
 
         /* =====================================================
            MOBILE
         ====================================================== */
 
-        @media(max-width:650px) {
+        @media (max-width: 650px) {
 
-          .engix-solutions-hero {
-            padding-top: 35px;
+          /*
+            HEADER IS ABOUT 66PX.
+            HERO STARTS AT 76PX.
+            ONLY ABOUT 10PX EXTRA GAP.
+          */
+
+          .engix-ads-hero {
+            padding:
+              76px 0 58px;
+
+            background:
+
+              linear-gradient(
+                180deg,
+                rgba(255,255,255,.96),
+                rgba(255,255,255,.91)
+              ),
+
+              url(
+                'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1400&q=90'
+              );
+
+            background-size: cover;
+
+            background-position: center;
           }
 
-          .engix-solutions-hero-copy {
-            padding: 45px 0 55px;
+
+          .engix-ads-hero-copy {
+            padding-top: 4px;
           }
 
-          .engix-solutions-hero h1 {
-            font-size: clamp(3.7rem,17vw,5.5rem);
+
+          .engix-ads-audit-badge {
+            padding:
+              10px 14px;
+
+            font-size: 13px;
           }
 
-          .engix-solutions-hero-buttons {
-            flex-direction: column;
+
+          .engix-ads-hero h1 {
+            margin-top: 22px;
+
+            font-size:
+              clamp(
+                3rem,
+                13vw,
+                4.6rem
+              );
           }
 
-          .engix-solutions-primary-btn,
-          .engix-solutions-secondary-btn {
+
+          .engix-ads-hero-description {
+            font-size: 18px;
+
+            line-height: 1.65;
+          }
+
+
+          .engix-ads-hero-buttons {
+            flex-direction:
+              column;
+          }
+
+
+          .engix-ads-primary-button,
+          .engix-ads-secondary-button {
             width: 100%;
+
+            box-sizing:
+              border-box;
           }
 
-          .engix-solutions-hero-trust {
-            flex-direction: column;
+
+          .engix-ads-hero-points {
+            flex-direction:
+              column;
+
+            gap: 13px;
           }
 
-          .engix-solutions-hero-image,
-          .engix-solutions-hero-image > img {
-            min-height: 420px;
 
-            height: 420px;
+          .engix-ads-hero-points > div {
+            font-size: 15px;
           }
 
-          .engix-solutions-hero-card {
-            display: none;
+
+          .engix-ads-direct-contact {
+            flex-direction:
+              column;
           }
 
-          .engix-solutions-hero-overlay {
-            left: 20px;
 
-            right: 20px;
-
-            bottom: 22px;
+          .engix-lead-card {
+            padding:
+              24px 18px;
           }
 
-          .engix-solutions-trust-grid {
-            grid-template-columns: 1fr;
+
+          .engix-lead-row {
+            grid-template-columns:
+              1fr;
+
+            gap: 0;
           }
 
-          .engix-solutions-trust-grid article,
-          .engix-solutions-trust-grid article:first-child {
-            padding: 24px 0;
+
+          .engix-lead-heading p {
+            font-size: 15px;
+          }
+
+
+          .engix-ads-proof {
+            padding-bottom:
+              60px;
+          }
+
+
+          .engix-ads-proof-grid {
+            grid-template-columns:
+              1fr;
+          }
+
+
+          .engix-ads-proof-grid article {
+            min-height: 125px;
 
             border-right: 0;
 
-            border-bottom: 1px solid var(--line);
+            border-bottom:
+              1px solid var(--line);
           }
 
-          .engix-solutions-services,
-          .engix-solutions-stack,
-          .engix-solutions-context,
-          .engix-solutions-work,
-          .engix-solutions-why,
-          .engix-solutions-process,
-          .engix-solutions-consultation,
-          .engix-solutions-company,
-          .engix-solutions-faq {
-            padding: 85px 0;
+
+          .engix-ads-proof-grid article:last-child {
+            border-bottom: 0;
           }
 
-          .engix-solutions-service {
-            min-height: 570px;
 
-            padding: 28px 23px;
+          .engix-ads-intro-image {
+            padding:
+              10px 0 70px;
           }
 
-          .engix-solutions-service-points {
-            grid-template-columns: 1fr;
+
+          .engix-ads-intro-image-wrap {
+            height: 430px;
           }
 
-          .engix-solutions-stack-list article {
-            grid-template-columns: 1fr;
+
+          .engix-ads-intro-overlay {
+            left: 24px;
+
+            right: 24px;
+
+            bottom: 28px;
+          }
+
+
+          .engix-ads-services,
+          .engix-ads-process,
+          .engix-ads-results,
+          .engix-ads-why,
+          .engix-ads-partnership,
+          .engix-ads-bottom-enquiry,
+          .engix-ads-faq {
+            padding:
+              78px 0;
+          }
+
+
+          .engix-ads-heading p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-services-grid {
+            grid-template-columns:
+              1fr;
+          }
+
+
+          .engix-ads-services-grid article {
+            min-height: auto;
+
+            padding: 27px 22px;
+          }
+
+
+          /*
+            KEEP THESE TEXTS LARGE
+            EVEN ON MOBILE.
+          */
+
+          .engix-service-description,
+          .engix-ads-services-grid article > p {
+            font-size: 18px;
+
+            line-height: 1.62;
+          }
+
+
+          .engix-ads-service-points {
+            grid-template-columns:
+              1fr;
 
             gap: 12px;
           }
 
-          .engix-solutions-context-image,
-          .engix-solutions-why-image,
-          .engix-solutions-company-image {
-            height: 400px;
+
+          .engix-ads-service-points span {
+            font-size: 16px;
           }
 
-          .engix-solutions-process-grid {
-            grid-template-columns: 1fr;
+
+          .engix-ads-web {
+            padding:
+              0 0 78px;
           }
 
-          .engix-solutions-process-grid article,
-          .engix-solutions-process-grid article:nth-child(3n + 1) {
-            min-height: 250px;
 
-            padding: 26px 0;
-
-            border-right: 0;
+          .engix-ads-web-image,
+          .engix-ads-web-image img {
+            min-height: 340px;
           }
 
-          .engix-solutions-form-card {
-            padding: 28px 20px;
+
+          .engix-ads-web-copy {
+            padding:
+              36px 22px;
           }
 
-          .engix-solutions-final {
-            padding: 85px 0;
+
+          .engix-ads-web-copy > p {
+            font-size: 17px;
           }
 
-          .engix-solutions-final::before {
-            width: calc(100% - 32px);
+
+          .engix-ads-web-copy > div span {
+            font-size: 16px;
           }
 
-          .engix-solutions-final-btn {
+
+          .engix-ads-process-list article {
+            grid-template-columns:
+              50px 1fr;
+
+            gap: 14px;
+          }
+
+
+          .engix-ads-process-list h3 {
+            font-size: 21px;
+          }
+
+
+          .engix-ads-process-list p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-results-grid p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-why-list h3 {
+            font-size: 21px;
+          }
+
+
+          .engix-ads-why-list p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-partnership-copy {
+            padding:
+              36px 22px;
+          }
+
+
+          .engix-ads-partnership-copy p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-partnership-image,
+          .engix-ads-partnership-image img {
+            min-height: 350px;
+          }
+
+
+          .engix-ads-bottom-copy > p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-faq-list summary {
+            font-size: 17px;
+
+            min-height: 76px;
+          }
+
+
+          .engix-ads-faq-list details p {
+            font-size: 16px;
+          }
+
+
+          .engix-ads-final p {
+            font-size: 17px;
+          }
+
+
+          .engix-ads-final-inner > div {
+            flex-direction:
+              column;
+          }
+
+
+          .engix-ads-final-primary,
+          .engix-ads-final-secondary {
             width: 100%;
 
-            justify-content: space-between;
+            box-sizing:
+              border-box;
           }
 
-          .engix-solutions-footer-main {
-            grid-template-columns: 1fr;
 
-            gap: 38px;
+          .engix-ads-footer-main {
+            grid-template-columns:
+              1fr;
+
+            gap: 36px;
           }
 
-          .engix-solutions-footer-bottom {
-            flex-direction: column;
 
-            align-items: flex-start;
+          .engix-ads-footer-main > div:first-child {
+            grid-column:
+              auto;
+          }
+
+
+          .engix-ads-footer-bottom {
+            flex-direction:
+              column;
+
+            align-items:
+              flex-start;
           }
 
         }
 
 
-        @media(max-width:430px) {
 
-          .engix-solutions-header-btn svg {
-            display: none;
-          }
+        /* =====================================================
+           VERY SMALL PHONES
+        ====================================================== */
 
-          .engix-solutions-logo span {
+        @media (max-width: 400px) {
+
+          .engix-ads-logo span {
             font-size: 31px;
           }
 
-          .engix-solutions-logo strong {
-            font-size: 21px;
+
+          .engix-ads-logo strong {
+            font-size: 20px;
           }
 
-          .engix-solutions-hero h1 {
-            font-size: clamp(3.3rem,16vw,4.6rem);
+
+          .engix-ads-header-button {
+            padding:
+              0 9px;
+          }
+
+
+          .engix-ads-header-button svg {
+            display: none;
+          }
+
+
+          .engix-ads-audit-badge {
+            font-size: 12px;
+          }
+
+
+          .engix-lead-submit {
+            font-size: 13px;
           }
 
         }
 
       `}</style>
+
     </>
   );
 }
