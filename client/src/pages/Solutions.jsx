@@ -32,8 +32,7 @@ import usePageTitle from '../hooks/usePageTitle';
 ========================================================= */
 
 const initialForm = {
-  firstName: '',
-  lastName: '',
+  name:'',
   company: '',
   email: '',
   phone: '',
@@ -263,179 +262,176 @@ function EnquiryForm({
   };
 
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+ const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    if (loading) {
-      return;
-    }
+  if (loading) {
+    return;
+  }
 
+  setStatus({
+    type: '',
+    message: ''
+  });
+
+
+  // REQUIRED FIELD VALIDATION
+  if (
+    !form.name ||
+    !form.company ||
+    !form.email ||
+    !form.phone ||
+    !form.service ||
+    !form.message
+  ) {
     setStatus({
-      type: '',
-      message: ''
+      type: 'error',
+      message:
+        'Please complete all required fields before submitting your enquiry.'
     });
 
-
-    if (
-      !form.firstName ||
-      !form.lastName ||
-      !form.company ||
-      !form.email ||
-      !form.phone ||
-      !form.service ||
-      !form.message
-    ) {
-      setStatus({
-        type: 'error',
-        message:
-          'Please complete all required fields before submitting your enquiry.'
-      });
-
-      return;
-    }
+    return;
+  }
 
 
-    if (!form.consent) {
-      setStatus({
-        type: 'error',
-        message:
-          'Please confirm that Engix may use your information to respond to your enquiry.'
-      });
+  // CONSENT VALIDATION
+  if (!form.consent) {
+    setStatus({
+      type: 'error',
+      message:
+        'Please confirm that Engix may use your information to respond to your enquiry.'
+    });
 
-      return;
-    }
-
-
-    setLoading(true);
+    return;
+  }
 
 
-    try {
-      const fullName =
-        `${form.firstName} ${form.lastName}`.trim();
+  setLoading(true);
 
 
-      /*
-        SAME PAYLOAD STRUCTURE USED BY
-        THE WORKING ENGIX CONTACT FORM
-      */
+  try {
 
-      const payload = {
-        name: fullName,
+    const payload = {
+      name: form.name.trim(),
 
-        firstName: form.firstName,
-        lastName: form.lastName,
+      email: form.email.trim(),
+      phone: form.phone.trim(),
 
-        email: form.email,
-        phone: form.phone,
+      company: form.company.trim(),
 
-        company: form.company,
+      role: '',
+      country: '',
 
-        role: '',
-        country: '',
+      inquiryType:
+        'New Project / Business Opportunity',
 
-        inquiryType:
-          'New Project / Business Opportunity',
+      service: form.service,
 
-        service: form.service,
+      budget: form.budget,
 
-        budget: form.budget,
+      timeline:
+        'To be discussed',
 
-        timeline:
-          'To be discussed',
+      message: form.message.trim(),
 
-        message: form.message,
+      source,
 
-        source,
-
-        page:
-          '/solutions'
-      };
+      page:
+        '/solutions'
+    };
 
 
-      console.log(
-        'Submitting Engix Solutions enquiry:',
+    console.log(
+      'Submitting Engix Solutions enquiry:',
+      payload
+    );
+
+
+    const response =
+      await api.post(
+        '/leads',
         payload
       );
 
 
-      const response =
-        await api.post(
-          '/leads',
-          payload
-        );
+    console.log(
+      'Engix enquiry response:',
+      response.data
+    );
 
 
-      console.log(
-        'Engix enquiry response:',
-        response.data
-      );
+    setStatus({
+      type: 'success',
+
+      message:
+        response?.data?.message ||
+        'Thank you. Your enquiry has been received successfully. Our team will contact you shortly.'
+    });
 
 
-      setStatus({
-        type: 'success',
+    /*
+      GOOGLE TAG MANAGER /
+      GOOGLE ADS LEAD CONVERSION
+    */
 
-        message:
-          response?.data?.message ||
-          'Thank you. Your enquiry has been received successfully. Our team will contact you shortly.'
+    if (
+      typeof window !==
+      'undefined'
+    ) {
+      window.dataLayer =
+        window.dataLayer || [];
+
+
+      window.dataLayer.push({
+        event:
+          'generate_lead',
+
+        lead_source:
+          source,
+
+        service:
+          form.service
       });
-
-
-      /*
-        READY FOR GOOGLE TAG MANAGER /
-        GOOGLE ADS LEAD CONVERSION
-      */
-
-      if (
-        typeof window !==
-        'undefined'
-      ) {
-        window.dataLayer =
-          window.dataLayer || [];
-
-        window.dataLayer.push({
-          event:
-            'generate_lead',
-
-          lead_source:
-            source,
-
-          service:
-            form.service
-        });
-      }
-
-
-      setForm(initialForm);
-
-    } catch (error) {
-      console.error(
-        'ENGIX SOLUTIONS FORM ERROR:',
-        error
-      );
-
-      console.error(
-        'Backend response:',
-        error?.response?.data
-      );
-
-      console.error(
-        'Status:',
-        error?.response?.status
-      );
-
-
-      setStatus({
-        type: 'error',
-
-        message:
-          error?.response?.data?.message ||
-          'We could not send your enquiry. Please try again or contact Engix by phone, WhatsApp or email.'
-      });
-
-    } finally {
-      setLoading(false);
     }
-  };
+
+
+    // RESET FORM AFTER SUCCESS
+    setForm(initialForm);
+
+  } catch (error) {
+
+    console.error(
+      'ENGIX SOLUTIONS FORM ERROR:',
+      error
+    );
+
+
+    console.error(
+      'Backend response:',
+      error?.response?.data
+    );
+
+
+    console.error(
+      'Status:',
+      error?.response?.status
+    );
+
+
+    setStatus({
+      type: 'error',
+
+      message:
+        error?.response?.data?.message ||
+        'We could not send your enquiry. Please try again or contact Engix by phone, WhatsApp or email.'
+    });
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
 
   return (
@@ -463,52 +459,27 @@ function EnquiryForm({
         onSubmit={handleSubmit}
       >
 
-        <div className="engix-lead-row">
+       <div className="engix-lead-field">
+  <label>
+    Full name *
+  </label>
 
-          <div className="engix-lead-field">
-
-            <label>
-              First name *
-            </label>
-
-            <input
-              type="text"
-              name="firstName"
-              value={form.firstName}
-              onChange={handleChange}
-              placeholder="First name"
-              autoComplete="given-name"
-              required
-            />
-
-          </div>
-
-
-          <div className="engix-lead-field">
-
-            <label>
-              Last name *
-            </label>
-
-            <input
-              type="text"
-              name="lastName"
-              value={form.lastName}
-              onChange={handleChange}
-              placeholder="Last name"
-              autoComplete="family-name"
-              required
-            />
-
-          </div>
-
-        </div>
+  <input
+    type="text"
+    name="name"
+    value={form.name}
+    onChange={handleChange}
+    placeholder="Your full name"
+    autoComplete="name"
+    required
+  />
+</div>
 
 
         <div className="engix-lead-field">
 
           <label>
-            Business name *
+            Business website *
           </label>
 
           <input
@@ -529,7 +500,7 @@ function EnquiryForm({
           <div className="engix-lead-field">
 
             <label>
-              Business email *
+              Email *
             </label>
 
             <input
@@ -548,7 +519,7 @@ function EnquiryForm({
           <div className="engix-lead-field">
 
             <label>
-              WhatsApp number *
+              Contact number *
             </label>
 
             <input
@@ -660,7 +631,7 @@ function EnquiryForm({
         <div className="engix-lead-field">
 
           <label>
-            What's your biggest challenge? *
+           Your Meassage *
           </label>
 
           <textarea
@@ -895,16 +866,7 @@ export default function Solutions() {
                   </a>
 
 
-                  <a
-                    href="#results"
-                    className="engix-ads-secondary-button"
-                  >
-                    See our work
-
-                    <ArrowRight
-                      size={21}
-                    />
-                  </a>
+                
 
                 </div>
 
@@ -988,64 +950,74 @@ export default function Solutions() {
 
 
 
-        {/* =====================================================
-            CLIENT PROOF
-        ====================================================== */}
+      
 
-        <section className="engix-ads-proof">
+       {/* =====================================================
+    CLIENT & DELIVERY PROOF
+====================================================== */}
 
-          <div className="engix-ads-shell">
+<section className="engix-ads-proof">
 
-            <div className="engix-ads-proof-grid">
+  <div className="engix-ads-shell">
 
-              <article>
-                <strong>
-                  51+
-                </strong>
+    <div className="engix-ads-proof-grid">
 
-                <span>
-                  Clients served
-                </span>
-              </article>
+      {/* EXPERIENCE */}
 
+      <article>
+        <strong>
+          Since 2019
+        </strong>
 
-              <article>
-                <strong>
-                  India
-                </strong>
-
-                <span>
-                  Domestic delivery
-                </span>
-              </article>
+        <span>
+          Building digital solutions
+        </span>
+      </article>
 
 
-              <article>
-                <strong>
-                  UK + Singapore
-                </strong>
+      {/* PROJECTS */}
 
-                <span>
-                  International experience
-                </span>
-              </article>
+      <article>
+        <strong>
+          300+
+        </strong>
+
+        <span>
+          Projects delivered
+        </span>
+      </article>
 
 
-              <article>
-                <strong>
-                  End-to-End
-                </strong>
+      {/* DOMESTIC */}
 
-                <span>
-                  Marketing + technology
-                </span>
-              </article>
+      <article>
+        <strong>
+          Pan-India
+        </strong>
 
-            </div>
+        <span>
+          Domestic project experience
+        </span>
+      </article>
 
-          </div>
 
-        </section>
+      {/* INTERNATIONAL */}
+
+      <article>
+        <strong>
+          Global
+        </strong>
+
+        <span>
+          International project experience
+        </span>
+      </article>
+
+    </div>
+
+  </div>
+
+</section>
 
 
 
@@ -2092,29 +2064,7 @@ export default function Solutions() {
                 </a>
 
 
-                <div className="engix-ads-footer-location">
-
-                  <span className="engix-ads-footer-contact-icon">
-                    <MapPin
-                      size={19}
-                      strokeWidth={1.8}
-                    />
-                  </span>
-
-
-                  <span className="engix-ads-footer-contact-copy">
-
-                    <small>
-                      LOCATION
-                    </small>
-
-                    <strong>
-                      Varanasi, Uttar Pradesh, India
-                    </strong>
-
-                  </span>
-
-                </div>
+              
 
               </div>
 
