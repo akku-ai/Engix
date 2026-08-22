@@ -1,13 +1,30 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 dotenv.config();
 
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT =
+  process.env.PORT || 5000;
+
+
+/* =========================================================
+   RESEND
+========================================================= */
+
+if (!process.env.RESEND_API_KEY) {
+  console.warn(
+    'WARNING: RESEND_API_KEY is missing.'
+  );
+}
+
+const resend = new Resend(
+  process.env.RESEND_API_KEY
+);
+
 
 /* =========================================================
    MIDDLEWARE
@@ -16,35 +33,68 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allows curl/Postman/server-to-server requests
+
+      /*
+        Allow curl / Postman /
+        server-to-server requests
+      */
+
       if (!origin) {
-        return callback(null, true);
+        return callback(
+          null,
+          true
+        );
       }
 
-      // Allow any localhost Vite port
+
+      /*
+        Local development
+      */
+
       if (
         /^http:\/\/localhost:\d+$/.test(origin) ||
         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)
       ) {
-        return callback(null, true);
+        return callback(
+          null,
+          true
+        );
       }
 
-      // Production Engix website
+
+      /*
+        Production Engix website
+      */
+
       const allowedOrigins = [
         'https://engix.world',
         'https://www.engix.world'
       ];
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(
+          null,
+          true
+        );
       }
 
-      console.log('Blocked by CORS:', origin);
+
+      console.log(
+        'Blocked by CORS:',
+        origin
+      );
+
 
       return callback(
-        new Error(`CORS blocked origin: ${origin}`)
+        new Error(
+          `CORS blocked origin: ${origin}`
+        )
       );
     },
+
 
     methods: [
       'GET',
@@ -52,180 +102,272 @@ app.use(
       'OPTIONS'
     ],
 
+
     allowedHeaders: [
       'Content-Type',
       'Authorization'
     ]
   })
 );
-app.use(express.json());
+
 
 app.use(
-  express.urlencoded({
-    extended: true
+  express.json({
+    limit: '100kb'
   })
 );
 
 
-/* =========================================================
-   MAIL TRANSPORTER
-========================================================= */
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_APP_PASSWORD
-  }
-});
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '100kb'
+  })
+);
 
 
 /* =========================================================
    ROOT
 ========================================================= */
 
-app.get('/', (req, res) => {
-  res.send('Engix Backend Running');
-});
+app.get(
+  '/',
+  (req, res) => {
+
+    res.send(
+      'Engix Backend Running'
+    );
+
+  }
+);
 
 
 /* =========================================================
    HEALTH CHECK
 ========================================================= */
 
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Engix API is running'
-  });
-});
+app.get(
+  '/api/health',
+  (req, res) => {
+
+    res.status(200).json({
+      success: true,
+
+      message:
+        'Engix API is running'
+    });
+
+  }
+);
 
 
 /* =========================================================
    LEAD ROUTE
 ========================================================= */
 
-app.post('/api/leads', async (req, res) => {
-  try {
-    const {
-      name,
-      firstName,
-      lastName,
-      email,
-      phone,
-      company,
-      service,
-      budget,
-      timeline,
-      message,
-      source,
-      page
-    } = req.body;
+app.post(
+  '/api/leads',
+  async (req, res) => {
 
-    /* -------------------------------------------------------
-       BASIC VALIDATION
-    ------------------------------------------------------- */
+    try {
 
-    const fullName =
-      name ||
-      `${firstName || ''} ${lastName || ''}`.trim();
+      const {
+        name,
+        firstName,
+        lastName,
 
-    if (!fullName) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name is required.'
-      });
-    }
+        email,
+        phone,
+        company,
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is required.'
-      });
-    }
+        role,
+        country,
 
-    if (!message) {
-      return res.status(400).json({
-        success: false,
-        message: 'Project details are required.'
-      });
-    }
+        inquiryType,
+
+        service,
+        budget,
+        timeline,
+
+        message,
+        source,
+        page
+      } = req.body;
 
 
-    /* -------------------------------------------------------
-       SAFE VALUES
-    ------------------------------------------------------- */
+      /* -------------------------------------------------------
+         NORMALIZE NAME
+      ------------------------------------------------------- */
 
-    const lead = {
-      name: fullName,
-      email,
-      phone: phone || 'Not provided',
-      company: company || 'Not provided',
-      service: service || 'Not specified',
-      budget: budget || 'Not specified',
-      timeline: timeline || 'Not specified',
-      message,
-      source: source || 'Website',
-      page: page || 'Unknown'
-    };
+      const fullName =
+        String(
+          name ||
+          `${firstName || ''} ${lastName || ''}`
+        ).trim();
 
 
-    /* -------------------------------------------------------
-       INTERNAL EMAIL
-    ------------------------------------------------------- */
+      /* -------------------------------------------------------
+         BASIC VALIDATION
+      ------------------------------------------------------- */
 
-    const internalMailOptions = {
-      from: `"Engix Website Leads" <${process.env.MAIL_USER}>`,
+      if (!fullName) {
 
-      to: [
+        return res
+          .status(400)
+          .json({
+            success: false,
+
+            message:
+              'Name is required.'
+          });
+
+      }
+
+
+      if (!email) {
+
+        return res
+          .status(400)
+          .json({
+            success: false,
+
+            message:
+              'Email is required.'
+          });
+
+      }
+
+
+      if (!message) {
+
+        return res
+          .status(400)
+          .json({
+            success: false,
+
+            message:
+              'Project details are required.'
+          });
+
+      }
+
+
+      /* -------------------------------------------------------
+         NORMALIZED LEAD DATA
+      ------------------------------------------------------- */
+
+      const lead = {
+
+        name:
+          fullName,
+
+        email:
+          String(email).trim(),
+
+        phone:
+          String(
+            phone ||
+            'Not provided'
+          ).trim(),
+
+        company:
+          String(
+            company ||
+            'Not provided'
+          ).trim(),
+
+        role:
+          String(
+            role ||
+            'Not provided'
+          ).trim(),
+
+        country:
+          String(
+            country ||
+            'Not provided'
+          ).trim(),
+
+        inquiryType:
+          String(
+            inquiryType ||
+            'New Project / Business Opportunity'
+          ).trim(),
+
+        service:
+          String(
+            service ||
+            'Not specified'
+          ).trim(),
+
+        budget:
+          String(
+            budget ||
+            'Not specified'
+          ).trim(),
+
+        timeline:
+          String(
+            timeline ||
+            'Not specified'
+          ).trim(),
+
+        message:
+          String(message).trim(),
+
+        source:
+          String(
+            source ||
+            'Website'
+          ).trim(),
+
+        page:
+          String(
+            page ||
+            'Unknown'
+          ).trim()
+
+      };
+
+
+      /* -------------------------------------------------------
+         RECIPIENTS
+      ------------------------------------------------------- */
+
+      const recipients = [
         process.env.LEAD_EMAIL_1,
         process.env.LEAD_EMAIL_2
-      ].filter(Boolean),
+      ].filter(Boolean);
 
-      replyTo: lead.email,
 
-      subject:
-        `New Engix Lead — ${lead.service} — ${lead.name}`,
+      if (!recipients.length) {
 
-      text: `
-New Engix Business Enquiry
+        console.error(
+          'No lead recipient emails configured.'
+        );
 
-Name:
-${lead.name}
 
-Email:
-${lead.email}
+        return res
+          .status(500)
+          .json({
+            success: false,
 
-Phone:
-${lead.phone}
+            message:
+              'Lead notification is not configured.'
+          });
 
-Company:
-${lead.company}
+      }
 
-Service:
-${lead.service}
 
-Estimated Budget:
-${lead.budget}
+      /* -------------------------------------------------------
+         INTERNAL EMAIL HTML
+      ------------------------------------------------------- */
 
-Timeline:
-${lead.timeline}
-
-Source:
-${lead.source}
-
-Page:
-${lead.page}
-
-Project Details:
-${lead.message}
-      `,
-
-      html: `
+      const internalEmailHtml = `
         <!DOCTYPE html>
 
         <html>
+
           <head>
             <meta charset="UTF-8" />
 
@@ -235,21 +377,23 @@ ${lead.message}
             />
           </head>
 
+
           <body
             style="
-              margin: 0;
-              padding: 0;
-              background: #f5f5f5;
-              font-family: Arial, Helvetica, sans-serif;
-              color: #111318;
+              margin:0;
+              padding:0;
+              background:#f5f5f5;
+              font-family:Arial,Helvetica,sans-serif;
+              color:#111318;
             "
           >
+
             <div
               style="
-                max-width: 680px;
-                margin: 30px auto;
-                background: #ffffff;
-                border: 1px solid #e8e8e8;
+                max-width:680px;
+                margin:30px auto;
+                background:#ffffff;
+                border:1px solid #e8e8e8;
               "
             >
 
@@ -257,27 +401,28 @@ ${lead.message}
 
               <div
                 style="
-                  padding: 28px 32px;
-                  border-bottom: 1px solid #eeeeee;
+                  padding:28px 32px;
+                  border-bottom:1px solid #eeeeee;
                 "
               >
 
                 <div
                   style="
-                    font-size: 25px;
-                    font-weight: 700;
-                    letter-spacing: -1px;
+                    font-size:25px;
+                    font-weight:700;
+                    letter-spacing:-1px;
                   "
                 >
-                  ✣ Engix
+                  Engix
                 </div>
+
 
                 <div
                   style="
-                    margin-top: 8px;
-                    color: #777777;
-                    font-size: 12px;
-                    letter-spacing: 1px;
+                    margin-top:8px;
+                    color:#777777;
+                    font-size:12px;
+                    letter-spacing:1px;
                   "
                 >
                   NEW BUSINESS ENQUIRY
@@ -290,29 +435,30 @@ ${lead.message}
 
               <div
                 style="
-                  padding: 30px 32px 10px;
+                  padding:30px 32px 10px;
                 "
               >
 
                 <h1
                   style="
-                    margin: 0;
-                    font-size: 28px;
-                    line-height: 1.2;
+                    margin:0;
+                    font-size:28px;
+                    line-height:1.2;
                   "
                 >
                   New lead received.
                 </h1>
 
+
                 <p
                   style="
-                    color: #666666;
-                    line-height: 1.7;
-                    font-size: 14px;
+                    color:#666666;
+                    line-height:1.7;
+                    font-size:14px;
                   "
                 >
-                  A new business enquiry has been submitted through
-                  the Engix website.
+                  A new business enquiry has been submitted
+                  through the Engix website.
                 </p>
 
               </div>
@@ -322,59 +468,106 @@ ${lead.message}
 
               <div
                 style="
-                  padding: 15px 32px 32px;
+                  padding:15px 32px 32px;
                 "
               >
 
-                ${createEmailRow('Name', lead.name)}
+                ${createEmailRow(
+                  'Name',
+                  lead.name
+                )}
 
-                ${createEmailRow('Email', lead.email)}
+                ${createEmailRow(
+                  'Email',
+                  lead.email
+                )}
 
-                ${createEmailRow('Phone', lead.phone)}
+                ${createEmailRow(
+                  'Phone',
+                  lead.phone
+                )}
 
-                ${createEmailRow('Company', lead.company)}
+                ${createEmailRow(
+                  'Company',
+                  lead.company
+                )}
 
-                ${createEmailRow('Service', lead.service)}
+                ${createEmailRow(
+                  'Role',
+                  lead.role
+                )}
 
-                ${createEmailRow('Budget', lead.budget)}
+                ${createEmailRow(
+                  'Country',
+                  lead.country
+                )}
 
-                ${createEmailRow('Timeline', lead.timeline)}
+                ${createEmailRow(
+                  'Inquiry Type',
+                  lead.inquiryType
+                )}
 
-                ${createEmailRow('Source', lead.source)}
+                ${createEmailRow(
+                  'Service',
+                  lead.service
+                )}
 
-                ${createEmailRow('Page', lead.page)}
+                ${createEmailRow(
+                  'Budget',
+                  lead.budget
+                )}
 
+                ${createEmailRow(
+                  'Timeline',
+                  lead.timeline
+                )}
+
+                ${createEmailRow(
+                  'Source',
+                  lead.source
+                )}
+
+                ${createEmailRow(
+                  'Page',
+                  lead.page
+                )}
+
+
+                <!-- MESSAGE -->
 
                 <div
                   style="
-                    margin-top: 28px;
+                    margin-top:28px;
                   "
                 >
 
                   <div
                     style="
-                      margin-bottom: 8px;
-                      color: #888888;
-                      font-size: 11px;
-                      font-weight: 700;
-                      letter-spacing: .8px;
-                      text-transform: uppercase;
+                      margin-bottom:8px;
+                      color:#888888;
+                      font-size:11px;
+                      font-weight:700;
+                      letter-spacing:.8px;
+                      text-transform:uppercase;
                     "
                   >
                     Project Details
                   </div>
 
+
                   <div
                     style="
-                      padding: 18px;
-                      background: #f8f8f8;
-                      color: #333333;
-                      font-size: 14px;
-                      line-height: 1.7;
-                      white-space: pre-line;
+                      padding:18px;
+                      background:#f8f8f8;
+                      color:#333333;
+                      font-size:14px;
+                      line-height:1.7;
+                      white-space:pre-line;
                     "
                   >
-                    ${escapeHtml(lead.message)}
+                    ${escapeHtml(
+                      lead.message
+                    )}
                   </div>
 
                 </div>
@@ -384,23 +577,27 @@ ${lead.message}
 
                 <div
                   style="
-                    margin-top: 28px;
+                    margin-top:28px;
                   "
                 >
 
                   <a
-                    href="mailto:${encodeURIComponent(lead.email)}"
+                    href="mailto:${escapeAttribute(
+                      lead.email
+                    )}"
                     style="
-                      display: inline-block;
-                      padding: 14px 20px;
-                      background: #050505;
-                      color: #ffffff;
-                      text-decoration: none;
-                      font-size: 13px;
-                      font-weight: 700;
+                      display:inline-block;
+                      padding:14px 20px;
+                      background:#050505;
+                      color:#ffffff;
+                      text-decoration:none;
+                      font-size:13px;
+                      font-weight:700;
                     "
                   >
-                    Reply to ${escapeHtml(lead.name)}
+                    Reply to ${escapeHtml(
+                      lead.name
+                    )}
                   </a>
 
                 </div>
@@ -412,11 +609,11 @@ ${lead.message}
 
               <div
                 style="
-                  padding: 20px 32px;
-                  border-top: 1px solid #eeeeee;
-                  color: #999999;
-                  font-size: 11px;
-                  line-height: 1.6;
+                  padding:20px 32px;
+                  border-top:1px solid #eeeeee;
+                  color:#999999;
+                  font-size:11px;
+                  line-height:1.6;
                 "
               >
                 Engix Tech Private Limited
@@ -425,148 +622,230 @@ ${lead.message}
               </div>
 
             </div>
+
           </body>
+
         </html>
-      `
-    };
+      `;
 
 
-    /* -------------------------------------------------------
-       SEND INTERNAL NOTIFICATION
-    ------------------------------------------------------- */
+      /* -------------------------------------------------------
+         SEND INTERNAL LEAD EMAIL
+      ------------------------------------------------------- */
 
-    await transporter.sendMail(
-      internalMailOptions
-    );
+      const internalResult =
+        await resend.emails.send({
+
+          from:
+            process.env.MAIL_FROM ||
+            'Engix Website <leads@engix.world>',
+
+          to:
+            recipients,
+
+          replyTo:
+            lead.email,
+
+          subject:
+            `New Engix Lead — ${lead.service} — ${lead.name}`,
+
+          html:
+            internalEmailHtml
+
+        });
 
 
-    /* -------------------------------------------------------
-       OPTIONAL CUSTOMER CONFIRMATION
-    ------------------------------------------------------- */
+      if (internalResult.error) {
 
-    const confirmationMailOptions = {
-      from:
-        `"Engix Tech Private Limited" <${process.env.MAIL_USER}>`,
+        console.error(
+          'Resend internal email error:',
+          internalResult.error
+        );
 
-      to:
-        lead.email,
 
-      subject:
-        'We received your enquiry — Engix',
+        return res
+          .status(502)
+          .json({
+            success: false,
 
-      html: `
+            message:
+              'We could not submit your enquiry right now. Please try again.'
+          });
+
+      }
+
+
+      console.log(
+        'Internal Engix lead email sent:',
+        internalResult.data?.id
+      );
+
+
+      /* -------------------------------------------------------
+         SUCCESS RESPONSE
+
+         IMPORTANT:
+         We return success after Engix receives
+         the lead notification.
+
+         Customer confirmation is secondary.
+      ------------------------------------------------------- */
+
+      res.status(201).json({
+
+        success: true,
+
+        message:
+          'Thank you. Your enquiry has been received successfully. Our team will contact you shortly.'
+
+      });
+
+
+      /* -------------------------------------------------------
+         CUSTOMER CONFIRMATION EMAIL
+
+         This should NOT make the form fail if
+         the customer's confirmation email fails.
+      ------------------------------------------------------- */
+
+      const customerEmailHtml = `
         <!DOCTYPE html>
 
         <html>
+
+          <head>
+            <meta charset="UTF-8" />
+
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            />
+          </head>
+
+
           <body
             style="
-              margin: 0;
-              padding: 0;
-              background: #f5f5f5;
-              font-family: Arial, Helvetica, sans-serif;
-              color: #111318;
+              margin:0;
+              padding:0;
+              background:#f5f5f5;
+              font-family:Arial,Helvetica,sans-serif;
+              color:#111318;
             "
           >
 
             <div
               style="
-                max-width: 650px;
-                margin: 30px auto;
-                background: #ffffff;
-                border: 1px solid #e8e8e8;
+                max-width:650px;
+                margin:30px auto;
+                background:#ffffff;
+                border:1px solid #e8e8e8;
               "
             >
 
+              <!-- HEADER -->
+
               <div
                 style="
-                  padding: 28px 32px;
-                  border-bottom: 1px solid #eeeeee;
+                  padding:28px 32px;
+                  border-bottom:1px solid #eeeeee;
                 "
               >
+
                 <strong
                   style="
-                    font-size: 24px;
+                    font-size:24px;
                   "
                 >
-                  ✣ Engix
+                  Engix
                 </strong>
+
               </div>
 
 
+              <!-- CONTENT -->
+
               <div
                 style="
-                  padding: 35px 32px;
+                  padding:35px 32px;
                 "
               >
 
                 <h1
                   style="
-                    margin: 0 0 18px;
-                    font-size: 28px;
+                    margin:0 0 18px;
+                    font-size:28px;
                   "
                 >
                   Thank you for contacting Engix.
                 </h1>
 
-                <p
-                  style="
-                    margin: 0;
-                    color: #666666;
-                    font-size: 14px;
-                    line-height: 1.8;
-                  "
-                >
-                  Hi ${escapeHtml(lead.name)},
-                </p>
 
                 <p
                   style="
-                    color: #666666;
-                    font-size: 14px;
-                    line-height: 1.8;
+                    margin:0;
+                    color:#666666;
+                    font-size:14px;
+                    line-height:1.8;
+                  "
+                >
+                  Hi ${escapeHtml(
+                    lead.name
+                  )},
+                </p>
+
+
+                <p
+                  style="
+                    color:#666666;
+                    font-size:14px;
+                    line-height:1.8;
                   "
                 >
                   We have received your enquiry regarding
                   <strong>
-                    ${escapeHtml(lead.service)}
+                    ${escapeHtml(
+                      lead.service
+                    )}
                   </strong>.
                 </p>
 
+
                 <p
                   style="
-                    color: #666666;
-                    font-size: 14px;
-                    line-height: 1.8;
+                    color:#666666;
+                    font-size:14px;
+                    line-height:1.8;
                   "
                 >
-                  Our team will review the information you provided
-                  and get in touch with you to discuss the most
-                  appropriate next step.
+                  Our team will review the information you
+                  provided and get in touch with you to
+                  discuss the most appropriate next step.
                 </p>
 
 
                 <div
                   style="
-                    margin-top: 28px;
-                    padding: 20px;
-                    background: #f8f8f8;
+                    margin-top:28px;
+                    padding:20px;
+                    background:#f8f8f8;
                   "
                 >
 
                   <strong
                     style="
-                      display: block;
-                      margin-bottom: 8px;
+                      display:block;
+                      margin-bottom:8px;
                     "
                   >
                     Need to contact us directly?
                   </strong>
 
+
                   <div
                     style="
-                      color: #666666;
-                      font-size: 13px;
-                      line-height: 1.8;
+                      color:#666666;
+                      font-size:13px;
+                      line-height:1.8;
                     "
                   >
                     Email: hello@engix.world
@@ -580,12 +859,14 @@ ${lead.message}
               </div>
 
 
+              <!-- FOOTER -->
+
               <div
                 style="
-                  padding: 20px 32px;
-                  border-top: 1px solid #eeeeee;
-                  color: #999999;
-                  font-size: 11px;
+                  padding:20px 32px;
+                  border-top:1px solid #eeeeee;
+                  color:#999999;
+                  font-size:11px;
                 "
               >
                 Engix Tech Private Limited
@@ -594,76 +875,225 @@ ${lead.message}
             </div>
 
           </body>
+
         </html>
-      `
-    };
-
-    await transporter.sendMail(
-      confirmationMailOptions
-    );
+      `;
 
 
-    /* -------------------------------------------------------
-       SUCCESS
-    ------------------------------------------------------- */
+      resend.emails
+        .send({
 
-    return res.status(201).json({
-      success: true,
+          from:
+            process.env.MAIL_FROM ||
+            'Engix Website <leads@engix.world>',
 
-      message:
-        'Thank you. Your enquiry has been received successfully.'
-    });
+          to:
+            [lead.email],
 
-  } catch (error) {
-    console.error(
-      'Lead submission error:',
-      error
-    );
+          replyTo:
+            'hello@engix.world',
 
-    return res.status(500).json({
-      success: false,
+          subject:
+            'We received your enquiry — Engix',
 
-      message:
-        'Unable to submit your enquiry right now. Please try again.'
-    });
+          html:
+            customerEmailHtml
+
+        })
+        .then((result) => {
+
+          if (result.error) {
+
+            console.error(
+              'Customer confirmation email error:',
+              result.error
+            );
+
+            return;
+          }
+
+
+          console.log(
+            'Customer confirmation email sent:',
+            result.data?.id
+          );
+
+        })
+        .catch((error) => {
+
+          console.error(
+            'Customer confirmation exception:',
+            error
+          );
+
+        });
+
+
+    } catch (error) {
+
+      console.error(
+        'Lead submission error:',
+        error
+      );
+
+
+      return res
+        .status(500)
+        .json({
+
+          success: false,
+
+          message:
+            'Unable to submit your enquiry right now. Please try again.'
+
+        });
+
+    }
+
   }
-});
+);
 
 
 /* =========================================================
-   EMAIL HELPERS
+   404 HANDLER
 ========================================================= */
 
-function createEmailRow(label, value) {
+app.use(
+  (req, res) => {
+
+    res.status(404).json({
+
+      success: false,
+
+      message:
+        'API endpoint not found.'
+
+    });
+
+  }
+);
+
+
+/* =========================================================
+   ERROR HANDLER
+========================================================= */
+
+app.use(
+  (
+    error,
+    req,
+    res,
+    next
+  ) => {
+
+    console.error(
+      'Engix server error:',
+      error
+    );
+
+
+    /*
+      Invalid JSON
+    */
+
+    if (
+      error instanceof SyntaxError &&
+      error.status === 400 &&
+      'body' in error
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          success: false,
+
+          message:
+            'Invalid request data.'
+
+        });
+
+    }
+
+
+    /*
+      CORS errors
+    */
+
+    if (
+      error?.message?.startsWith(
+        'CORS blocked origin:'
+      )
+    ) {
+
+      return res
+        .status(403)
+        .json({
+
+          success: false,
+
+          message:
+            'Request origin is not allowed.'
+
+        });
+
+    }
+
+
+    return res
+      .status(500)
+      .json({
+
+        success: false,
+
+        message:
+          'Internal server error.'
+
+      });
+
+  }
+);
+
+
+/* =========================================================
+   EMAIL ROW HELPER
+========================================================= */
+
+function createEmailRow(
+  label,
+  value
+) {
+
   return `
     <div
       style="
-        display: table;
-        width: 100%;
-        padding: 12px 0;
-        border-bottom: 1px solid #eeeeee;
+        display:table;
+        width:100%;
+        padding:12px 0;
+        border-bottom:1px solid #eeeeee;
       "
     >
 
       <div
         style="
-          display: table-cell;
-          width: 145px;
-          color: #888888;
-          font-size: 12px;
-          vertical-align: top;
+          display:table-cell;
+          width:145px;
+          color:#888888;
+          font-size:12px;
+          vertical-align:top;
         "
       >
         ${escapeHtml(label)}
       </div>
 
+
       <div
         style="
-          display: table-cell;
-          color: #222222;
-          font-size: 13px;
-          font-weight: 600;
-          vertical-align: top;
+          display:table-cell;
+          color:#222222;
+          font-size:13px;
+          font-weight:600;
+          vertical-align:top;
         "
       >
         ${escapeHtml(value)}
@@ -671,16 +1101,56 @@ function createEmailRow(label, value) {
 
     </div>
   `;
+
 }
 
 
-function escapeHtml(value = '') {
+/* =========================================================
+   HTML ESCAPING
+========================================================= */
+
+function escapeHtml(
+  value = ''
+) {
+
   return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+
+    .replaceAll(
+      '&',
+      '&amp;'
+    )
+
+    .replaceAll(
+      '<',
+      '&lt;'
+    )
+
+    .replaceAll(
+      '>',
+      '&gt;'
+    )
+
+    .replaceAll(
+      '"',
+      '&quot;'
+    )
+
+    .replaceAll(
+      "'",
+      '&#039;'
+    );
+
+}
+
+
+function escapeAttribute(
+  value = ''
+) {
+
+  return escapeHtml(
+    value
+  );
+
 }
 
 
@@ -692,8 +1162,10 @@ app.listen(
   PORT,
   '0.0.0.0',
   () => {
+
     console.log(
       `Engix server running on port ${PORT}`
     );
+
   }
 );
