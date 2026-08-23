@@ -849,6 +849,12 @@ export default function Solutions() {
                   We help local businesses get more leads,
                   more calls, and more customers — with SEO,
                   paid ads, social media that actually converts.
+                    <br />
+  <span>
+    From strategy to execution, we focus on measurable
+    growth that turns your marketing investment into
+    real business opportunities.
+  </span>
                 </p>
 
 
@@ -2540,7 +2546,7 @@ export default function Solutions() {
           max-width: 870px;
 
           margin:
-            27px 0 0;
+            80px 0 0;
 
           font-size:
             clamp(
@@ -2566,7 +2572,7 @@ export default function Solutions() {
           max-width: 760px;
 
           margin:
-            29px 0 0;
+            62px 0 0;
 
           color: #454b52;
 
@@ -2590,7 +2596,7 @@ export default function Solutions() {
 
           gap: 13px;
 
-          margin-top: 32px;
+          margin-top: 46px;
         }
 
 
@@ -2660,7 +2666,7 @@ export default function Solutions() {
           gap:
             16px 25px;
 
-          margin-top: 32px;
+          margin-top: 44px;
         }
 
 
@@ -2694,7 +2700,7 @@ export default function Solutions() {
           gap:
             14px 23px;
 
-          margin-top: 25px;
+          margin-top: 36px;
         }
 
 
