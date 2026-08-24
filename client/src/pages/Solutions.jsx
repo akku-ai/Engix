@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate } from 'react-router-dom';
 
 import {
   ArrowDown,
@@ -234,6 +234,8 @@ function EnquiryForm({
   description =
     'Tell us about your business, current marketing and what you would like to improve.'
 }) {
+
+  const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
 
   const [loading, setLoading] = useState(false);
@@ -347,56 +349,62 @@ function EnquiryForm({
     );
 
 
-    const response =
-      await api.post(
-        '/leads',
-        payload
-      );
+   const response =
+  await api.post(
+    '/leads',
+    payload
+  );
 
 
-    console.log(
-      'Engix enquiry response:',
-      response.data
-    );
+console.log(
+  'Engix enquiry response:',
+  response.data
+);
 
 
-    setStatus({
-      type: 'success',
+/*
+  GOOGLE TAG MANAGER /
+  GOOGLE ADS LEAD CONVERSION
+*/
 
-      message:
-        response?.data?.message ||
-        'Thank you. Your enquiry has been received successfully. Our team will contact you shortly.'
-    });
+if (
+  typeof window !==
+  'undefined'
+) {
+  window.dataLayer =
+    window.dataLayer || [];
 
+  window.dataLayer.push({
+    event:
+      'generate_lead',
 
-    /*
-      GOOGLE TAG MANAGER /
-      GOOGLE ADS LEAD CONVERSION
-    */
+    lead_source:
+      source,
 
-    if (
-      typeof window !==
-      'undefined'
-    ) {
-      window.dataLayer =
-        window.dataLayer || [];
-
-
-      window.dataLayer.push({
-        event:
-          'generate_lead',
-
-        lead_source:
-          source,
-
-        service:
-          form.service
-      });
-    }
+    service:
+      form.service
+  });
+}
 
 
-    // RESET FORM AFTER SUCCESS
-    setForm(initialForm);
+/*
+  RESET FORM AFTER SUCCESS
+*/
+
+setForm(initialForm);
+
+
+/*
+  REDIRECT TO THANK YOU PAGE
+*/
+
+navigate('/thank-you', {
+  replace: true,
+  state: {
+    from: '/solutions',
+    service: form.service
+  }
+});
 
   } catch (error) {
 

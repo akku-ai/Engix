@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import Solutions from './pages/Solutions';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import ThankYou from './pages/ThankYou';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
       </Route>
       
        <Route path="/solutions" element={<Solutions />}/>
+       <Route path="/thank-you" element={<ThankYou />}/>
        <Route path="*" element={<NotFound />} />
  </Routes>
   );
