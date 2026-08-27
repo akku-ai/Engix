@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
+
 import {
-    ArrowLeft,
+  ArrowLeft,
   ArrowRight,
   Check,
   CheckCircle2,
@@ -28,46 +30,34 @@ export default function ThankYou() {
     'your enquiry';
 
 
+  /* =====================================================
+     GOOGLE TAG MANAGER — SPA-SAFE EVENT PUSH
+     -----------------------------------------------------
+     GTM's base container script should be loaded ONCE,
+     globally, in index.html or App.jsx — NOT re-injected
+     on every route. This effect just pushes a custom
+     event into dataLayer so you can build a "Thank You /
+     Conversion" trigger for this page inside the GTM
+     web console (Trigger type: Custom Event, Event name:
+     thank_you_view).
+  ====================================================== */
+  useEffect(() => {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'thank_you_view',
+      service: service
+    });
+  }, [service]);
+
+
   return (
     <main className="engix-thankyou-page">
- {/* =====================================================
-    GOOGLE TAG MANAGER
-====================================================== */}
-
-<script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function(w,d,s,l,i){
-        w[l]=w[l]||[];
-        w[l].push({
-          'gtm.start': new Date().getTime(),
-          event:'gtm.js'
-        });
-
-        var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),
-            dl=l!='dataLayer'?'&l='+l:'';
-
-        j.async=true;
-
-        j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;
-
-        f.parentNode.insertBefore(j,f);
-
-      })(window,document,'script','dataLayer','GTM-THKLVG9Q');
-    `
-  }}
-/>
-        
 
       {/* =====================================================
           HEADER
       ====================================================== */}
 
       <header className="engix-thankyou-header">
- 
-      
 
         <div className="engix-thankyou-shell engix-thankyou-header-inner">
 
@@ -517,24 +507,6 @@ export default function ThankYou() {
 
       </section>
 
-      {/* =====================================================
-    GOOGLE TAG MANAGER NOSCRIPT
-====================================================== */}
-
-<noscript>
-  <iframe
-    src="https://www.googletagmanager.com/ns.html?id=GTM-THKLVG9Q"
-    height="0"
-    width="0"
-    style={{
-      display: 'none',
-      visibility: 'hidden'
-    }}
-    title="Google Tag Manager"
-  />
-</noscript>
-
-
 
       {/* =====================================================
           FOOTER
@@ -566,9 +538,6 @@ export default function ThankYou() {
         </div>
 
       </footer>
-
-
-    
 
 
 
