@@ -1,2914 +1,939 @@
-import usePageTitle from '../hooks/usePageTitle';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-  ArrowRight,
   ArrowUpRight,
   BrainCircuit,
   CheckCircle2,
   CloudCog,
   Code2,
   Globe2,
-  Layers3,
+  LayoutDashboard,
   Lightbulb,
-  MessageCircle,
+  Mail,
+  Megaphone,
+  MessageSquareText,
+  Palette,
+  Phone,
+  Rocket,
+  Search,
   ShieldCheck,
   Smartphone,
   Target,
   Workflow
 } from 'lucide-react';
 
+import usePageTitle from '../hooks/usePageTitle';
+import '../styles/engix-about.css';
+
+const imageSources = {
+  team: [
+    'team-collaboration.jpg',
+    'photo-1600880292203-757bb62b4baf'
+  ],
+  office: [
+    'project-consultation.jpg',
+    'photo-1524758631624-e2822e304c36'
+  ],
+  session: [
+    'working-session.jpg',
+    'photo-1531482615713-2afd69097998'
+  ],
+  engineering: [
+    'software-engineering.jpg',
+    'photo-1461749280684-dccba630e2f6'
+  ],
+  marketing: [
+    'marketing-research.jpg',
+    'photo-1454165804606-c3d57bc86b40'
+  ]
+};
+
+function AboutImage({ name, alt, priority = false }) {
+  const [attempt, setAttempt] = useState(0);
+
+  const [file, photo] = imageSources[name];
+
+  const local =
+    `${import.meta.env.BASE_URL}images/about/${file}`;
+
+  const remote =
+    `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1600&q=85`;
+
+  if (attempt > 1) {
+    return (
+      <div
+        className="ea-image-fallback"
+        role="img"
+        aria-label={alt}
+      >
+        <Globe2 size={48} aria-hidden="true" />
+
+        <span>
+          Technology. Collaboration. Progress.
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={attempt === 0 ? local : remote}
+      alt={alt}
+      width="1600"
+      height="1067"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : 'auto'}
+      decoding="async"
+      onError={() => setAttempt(value => value + 1)}
+    />
+  );
+}
+
+const capabilities = [
+  {
+    icon: Code2,
+    title: 'Custom Software Development',
+    text:
+      'Business applications, internal tools and tailored software that connect your teams, information and day-to-day operations.'
+  },
+  {
+    icon: Smartphone,
+    title: 'Website & Mobile Development',
+    text:
+      'Company websites, ecommerce experiences and web and mobile applications designed around usability and business requirements.'
+  },
+  {
+    icon: Palette,
+    title: 'UI/UX & Experience Design',
+    text:
+      'Research, user journeys, wireframes and interface design that help people navigate your services and complete tasks with confidence.'
+  },
+  {
+    icon: BrainCircuit,
+    title: 'AI & Intelligent Automation',
+    text:
+      'AI integrations, assistants and automated workflows shaped around practical use cases, data requirements and human oversight.'
+  },
+  {
+    icon: CloudCog,
+    title: 'Backend, APIs & Cloud',
+    text:
+      'Application backends, integrations, databases and deployment foundations, with attention to security, reliability and maintainability.'
+  },
+  {
+    icon: Workflow,
+    title: 'Business Workflow Solutions',
+    text:
+      'Customer management, reporting and operational tools that reduce disconnected processes and improve access to useful information.'
+  },
+  {
+    icon: Megaphone,
+    title: 'Digital Marketing & Content',
+    text:
+      'SEO, paid advertising, social media, content and email marketing planned around your audience, positioning and business objectives.'
+  },
+  {
+    icon: LayoutDashboard,
+    title: 'Analytics & Conversion',
+    text:
+      'Measurement planning, campaign reporting and website improvements that help you understand engagement and make informed decisions.'
+  }
+];
+
+const principles = [
+  {
+    icon: Target,
+    title: 'Business understanding first',
+    text:
+      'We start with the problem, the people affected and the outcome you want before recommending a technical or marketing approach.'
+  },
+  {
+    icon: MessageSquareText,
+    title: 'Clear communication',
+    text:
+      'Scope, responsibilities, decisions and progress reviews are discussed early so everyone understands how the engagement will work.'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Responsible execution',
+    text:
+      'We consider quality, access controls, maintainability and measurement as part of delivery, rather than leaving them until the end.'
+  },
+  {
+    icon: Lightbulb,
+    title: 'Practical improvement',
+    text:
+      'Recommendations reflect your current needs and constraints, with room to improve as requirements and business priorities change.'
+  }
+];
+
+const process = [
+  {
+    icon: Search,
+    title: 'Discover',
+    text:
+      'Understand your business, audience, existing systems and desired outcomes.'
+  },
+  {
+    icon: Target,
+    title: 'Define',
+    text:
+      'Agree on scope, priorities, requirements and delivery responsibilities.'
+  },
+  {
+    icon: Palette,
+    title: 'Design',
+    text:
+      'Shape interfaces, workflows, content and campaign direction.'
+  },
+  {
+    icon: Code2,
+    title: 'Build',
+    text:
+      'Develop systems or prepare campaigns in planned, reviewable stages.'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Validate',
+    text:
+      'Review functionality, experience, integrations and measurement.'
+  },
+  {
+    icon: Rocket,
+    title: 'Launch & Improve',
+    text:
+      'Launch the agreed work and plan support or improvements within scope.'
+  }
+];
+
+const engineeringStandards = [
+  {
+    icon: Code2,
+    title: 'Maintainable foundations',
+    text:
+      'Clear application structure, reusable components and documented integrations help make future changes easier to understand and manage.'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Quality and security considerations',
+    text:
+      'Testing, permissions, validation and sensible access controls are considered alongside the features required for the engagement.'
+  },
+  {
+    icon: CloudCog,
+    title: 'Deployment and handover',
+    text:
+      'Environment configuration, release planning and useful handover information help your team prepare for the next stage of operation.'
+  }
+];
+
+const marketingServices = [
+  {
+    title: 'Search visibility',
+    text:
+      'Technical SEO, on-page improvements and relevant content help organize your website around the searches that matter to your audience.'
+  },
+  {
+    title: 'Paid campaigns',
+    text:
+      'Campaign structure, audience selection, creative messaging and landing pages are planned around agreed objectives and advertising budgets.'
+  },
+  {
+    title: 'Social media and content',
+    text:
+      'Channel planning, brand messaging and useful content help maintain a coherent presence across the places your audience spends time.'
+  },
+  {
+    title: 'Email and measurement',
+    text:
+      'Email communication, conversion tracking and reporting help connect marketing activity with observable engagement and enquiry data.'
+  }
+];
+
+const engagementOptions = [
+  {
+    icon: Target,
+    title: 'Defined project delivery',
+    text:
+      'For a website, application or specific initiative with an agreed scope, delivery stages and review points.'
+  },
+  {
+    icon: Workflow,
+    title: 'Ongoing collaboration',
+    text:
+      'For marketing activity, maintenance or improvements delivered through an agreed schedule and set of responsibilities.'
+  },
+  {
+    icon: MessageSquareText,
+    title: 'Support for your existing team',
+    text:
+      'For businesses that need additional design, development or marketing capability alongside their internal stakeholders.'
+  }
+];
+
+function Checklist({ items }) {
+  return (
+    <ul className="ea-checklist">
+      {items.map(text => (
+        <li key={text}>
+          <CheckCircle2
+            size={20}
+            aria-hidden="true"
+          />
+
+          <span>{text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CardGrid({ items, className = '' }) {
+  return (
+    <div className={`ea-card-grid ${className}`}>
+      {items.map(({ icon: Icon, title, text }) => (
+        <article className="ea-card" key={title}>
+          <span className="ea-icon">
+            <Icon
+              size={26}
+              strokeWidth={1.7}
+              aria-hidden="true"
+            />
+          </span>
+
+          <h3>{title}</h3>
+
+          <p>{text}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export default function About() {
   usePageTitle('About');
 
-  const process = [
-    {
-      number: '01',
-      title: 'Discover',
-      description:
-        'We begin by understanding the business, users, existing systems, constraints and the outcome the technology needs to create.'
-    },
-    {
-      number: '02',
-      title: 'Shape',
-      description:
-        'We translate the challenge into product priorities, user journeys, technical architecture and a practical delivery roadmap.'
-    },
-    {
-      number: '03',
-      title: 'Design',
-      description:
-        'Interfaces and workflows are designed around clarity, usability and the real tasks people need to complete.'
-    },
-    {
-      number: '04',
-      title: 'Engineer',
-      description:
-        'Our engineers build secure, maintainable frontend, backend, mobile and cloud systems through structured development cycles.'
-    },
-    {
-      number: '05',
-      title: 'Validate',
-      description:
-        'Testing, product reviews and technical validation help ensure the experience works reliably before production release.'
-    },
-    {
-      number: '06',
-      title: 'Launch & Evolve',
-      description:
-        'We support deployment, production improvements, maintenance and future development as the business continues to evolve.'
-    }
-  ];
-
-  const capabilities = [
-    {
-      icon: Code2,
-      title: 'Software Engineering',
-      description:
-        'Custom platforms, SaaS products, internal systems and business applications designed around real operational requirements.',
-      tone: 'lavender'
-    },
-    {
-      icon: BrainCircuit,
-      title: 'AI & Automation',
-      description:
-        'Conversational AI, intelligent assistants, automation and AI-enabled features designed to create practical business value.',
-      tone: 'yellow'
-    },
-    {
-      icon: Smartphone,
-      title: 'Web & Mobile Products',
-      description:
-        'Responsive web applications and mobile experiences engineered for performance, usability and long-term maintainability.',
-      tone: 'mint'
-    },
-    {
-      icon: Layers3,
-      title: 'Product & UI/UX',
-      description:
-        'Product thinking, user journeys, design systems and interfaces that transform complex workflows into clear experiences.',
-      tone: 'peach'
-    },
-    {
-      icon: CloudCog,
-      title: 'Cloud & Backend',
-      description:
-        'APIs, databases, authentication, integrations, infrastructure and deployment systems supporting dependable digital products.',
-      tone: 'lavender'
-    },
-    {
-      icon: Workflow,
-      title: 'Business Automation',
-      description:
-        'Digital workflows that replace repetitive manual processes and connect teams, customers, data and business operations.',
-      tone: 'yellow'
-    }
-  ];
-
-  const principles = [
-    {
-      icon: Target,
-      title: 'Business outcomes first',
-      description:
-        'Technology decisions should support measurable business priorities, not exist simply because a technology is available.'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Transparent collaboration',
-      description:
-        'Clear priorities, regular communication and practical discussions keep clients involved throughout the engagement.'
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Engineering for the long term',
-      description:
-        'Maintainability, security, performance and future growth are considered from architecture through production.'
-    },
-    {
-      icon: Lightbulb,
-      title: 'Continuous improvement',
-      description:
-        'Products are expected to evolve. We build foundations that make future improvements easier rather than harder.'
-    }
-  ];
-
-  const markets = [
-    'Startups',
-    'SMEs',
-    'Technology Companies',
-    'Professional Services',
-    'Service Businesses',
-    'Enterprise Teams',
-    'International Businesses',
-    'Digital-First Companies'
-  ];
-
   return (
-    <>
-      <main className="engix-about-page">
-
-        {/* =====================================================
-            HERO
-        ====================================================== */}
-
-        <section className="engix-about-hero">
-          <div className="engix-about-shell">
-
-            <div className="engix-about-hero-grid">
-
-              <div className="engix-about-hero-copy">
-
-                <span className="engix-about-label">
-                  ABOUT ENGIX
-                </span>
-
-                <h1>
-                  Technology built
-                  around businesses,
-                  not just briefs.
-                </h1>
-
-                <p className="engix-about-hero-intro">
-                  Engix Tech Private Limited is a technology and software
-                  engineering company helping businesses design, build and
-                  evolve modern digital products.
-                </p>
-
-                <p className="engix-about-hero-secondary">
-                  We bring product thinking, experience design, software
-                  engineering, artificial intelligence and cloud technology
-                  together to solve real operational challenges and create
-                  digital systems designed for long-term growth.
-                </p>
-
-                <div className="engix-about-hero-actions">
-
-                  <Link
-                    to="/services"
-                    className="engix-about-primary-btn"
-                  >
-                    Explore our capabilities
-
-                    <ArrowRight
-                      size={20}
-                      strokeWidth={1.8}
-                    />
-                  </Link>
-
-                  <Link
-                    to="/portfolio"
-                    className="engix-about-secondary-btn"
-                  >
-                    See our work
-
-                    <ArrowUpRight
-                      size={20}
-                      strokeWidth={1.8}
-                    />
-                  </Link>
-
-                </div>
-
-              </div>
-
-
-              <div className="engix-about-hero-image">
-
-                <img
-                  src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional technology team collaborating"
-                />
-
-                <div className="engix-about-image-overlay">
-
-                  <span>
-                    ENGIX TECH PRIVATE LIMITED
-                  </span>
-
-                  <strong>
-                    Product thinking.
-                    <br />
-                    Strong engineering.
-                    <br />
-                    Practical technology.
-                  </strong>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-
-        {/* =====================================================
-            WHO WE ARE
-        ====================================================== */}
-
-        <section className="engix-about-company">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-company-grid">
-
-              <div className="engix-about-company-label">
-                <span>
-                  WHO WE ARE
-                </span>
-              </div>
-
-              <div className="engix-about-company-content">
-
-                <h2>
-                  A technology partner
-                  for businesses building
-                  what comes next.
-                </h2>
-
-                <div className="engix-about-company-text-grid">
-
-                  <p>
-                    Engix works with organizations that need more than
-                    isolated development resources. We help bring clarity
-                    to the product, understand how technology fits into the
-                    wider business and create systems that remain useful
-                    beyond their first release.
-                  </p>
-
-                  <p>
-                    Our work spans websites, web applications, mobile
-                    products, AI-powered experiences, business automation,
-                    custom software, APIs, cloud systems and enterprise
-                    workflows.
-                  </p>
-
-                  <p>
-                    We support both domestic and international businesses,
-                    combining remote collaboration with structured planning,
-                    design, engineering, deployment and ongoing technical
-                    support.
-                  </p>
-
-                  <p>
-                    Whether an organization is launching something new,
-                    replacing manual processes or modernizing an existing
-                    platform, our focus remains the same: create technology
-                    that is clear, reliable and ready to evolve.
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            COMPANY IMAGE
-        ====================================================== */}
-
-        <section className="engix-about-wide-image">
-
-          <img
-            src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=2000&q=90"
-            alt="Business and technology professionals planning a digital product"
-          />
-
-          <div className="engix-about-wide-overlay">
-
-            <span>
-              TECHNOLOGY WITH CONTEXT
+    <div className="engix-about-page">
+      {/* HERO */}
+      <section
+        className="ea-hero"
+        aria-labelledby="ea-title"
+      >
+        <div className="ea-shell ea-split">
+          <div>
+            <span className="ea-eyebrow">
+              ABOUT ENGIX TECH PRIVATE LIMITED
             </span>
 
-            <strong>
-              The right solution starts
-              with understanding the
-              business behind it.
-            </strong>
+            <h1 id="ea-title">
+              Technology Expertise.
+              <br />
+              Business Focus.
+            </h1>
 
+            <p className="ea-lead">
+              IT services, custom development and digital
+              marketing built around the way your business works.
+            </p>
+
+            <p>
+              Engix helps businesses strengthen their digital
+              presence, improve operations and develop the
+              technology they need. We bring design, engineering
+              and marketing capabilities together around clear
+              objectives and a practical delivery approach.
+            </p>
+
+            <Link className="ea-button" to="/contact">
+              Discuss your requirements
+
+              <ArrowUpRight
+                size={20}
+                aria-hidden="true"
+              />
+            </Link>
           </div>
 
-        </section>
+          <figure className="ea-photo ea-hero-photo">
+            <AboutImage
+              name="team"
+              priority
+              alt="Stock photograph of two professionals celebrating progress at an office table"
+            />
 
+            <figcaption>
+              Thoughtful collaboration. Clear direction.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
 
-        {/* =====================================================
-            WHAT WE BUILD
-        ====================================================== */}
+      {/* COMPANY INTRODUCTION */}
+      <section
+        className="ea-section"
+        aria-labelledby="ea-story"
+      >
+        <div className="ea-shell">
+          <div className="ea-heading">
+            <span className="ea-eyebrow">
+              WHO WE ARE
+            </span>
 
-        <section className="engix-about-capabilities">
+            <h2 id="ea-story">
+              A Services Partner for Your Next Stage of Growth
+            </h2>
 
-          <div className="engix-about-shell">
+            <p>
+              Engix Tech Private Limited works with organizations
+              that want technology and digital marketing to
+              support real business priorities.
+            </p>
+          </div>
 
-            <div className="engix-about-section-heading">
-
-              <div>
-                <span className="engix-about-label">
-                  WHAT WE BUILD
-                </span>
-
-                <h2>
-                  Connected capabilities
-                  across the digital
-                  product lifecycle.
-                </h2>
-              </div>
-
+          <div className="ea-story-grid">
+            <div>
               <p>
-                Instead of treating strategy, design, development and
-                infrastructure as separate activities, we connect them
-                through one product and engineering workflow.
+                Your requirements may involve a new website, a
+                custom application, connected business systems or
+                a more coordinated marketing presence. We help
+                clarify what is needed and turn that understanding
+                into a defined scope of work.
               </p>
 
+              <p>
+                Our focus is service delivery: building and
+                improving solutions for clients, with attention to
+                the people who use them and the teams responsible
+                for managing them.
+              </p>
             </div>
 
+            <div>
+              <p>
+                We connect business context with technical
+                decisions and creative execution. That means
+                considering user experience, operational workflows,
+                integrations and measurement alongside the visible
+                design.
+              </p>
 
-            <div className="engix-about-capabilities-grid">
-
-              {capabilities.map((item, index) => {
-                const Icon = item.icon;
-
-                return (
-                  <article
-                    key={item.title}
-                    className={`engix-about-capability capability-${item.tone}`}
-                  >
-
-                    <div className="engix-about-capability-top">
-
-                      <span>
-                        0{index + 1}
-                      </span>
-
-                      <div>
-                        <Icon
-                          size={31}
-                          strokeWidth={1.5}
-                        />
-                      </div>
-
-                    </div>
-
-                    <h3>
-                      {item.title}
-                    </h3>
-
-                    <p>
-                      {item.description}
-                    </p>
-
-                  </article>
-                );
-              })}
-
+              <p>
+                From an initial conversation through delivery, our
+                aim is to keep priorities clear, decisions
+                understandable and the work aligned with the agreed
+                objectives.
+              </p>
             </div>
-
           </div>
 
-        </section>
-
-
-        {/* =====================================================
-            INTERNATIONAL DELIVERY
-        ====================================================== */}
-
-        <section className="engix-about-global">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-global-grid">
-
-              <div className="engix-about-global-image">
-
-                <img
-                  src="https://images.unsplash.com/photo-1497366811364-ccf3f5bdb57d?auto=format&fit=crop&w=1800&q=90"
-                  alt="Modern international business environment"
-                />
-
-                <div>
-
-                  <span>
-                    GLOBAL DELIVERY
-                  </span>
-
-                  <strong>
-                    Built from India.
-                    <br />
-                    Designed to work
-                    across borders.
-                  </strong>
-
-                </div>
-
-              </div>
-
-
-              <div className="engix-about-global-copy">
-
-                <span className="engix-about-label">
-                  INTERNATIONAL PERSPECTIVE
-                </span>
-
-                <h2>
-                  Working across markets
-                  with one clear delivery
-                  process.
-                </h2>
-
-                <p>
-                  Modern technology teams no longer need to be separated
-                  by geography. Engix uses structured remote collaboration
-                  to work effectively with businesses operating across
-                  different markets and time zones.
-                </p>
-
-                <p>
-                  Our approach emphasizes documentation, regular reviews,
-                  transparent priorities and clear ownership so that
-                  distributed engagements remain organized from discovery
-                  through production.
-                </p>
-
-
-                <div className="engix-about-global-points">
-
-                  <div>
-                    <CheckCircle2 size={21} />
-                    <span>Domestic and international collaboration</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={21} />
-                    <span>Remote-first product delivery</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={21} />
-                    <span>Transparent project communication</span>
-                  </div>
-
-                  <div>
-                    <CheckCircle2 size={21} />
-                    <span>Long-term engineering support</span>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            PROCESS
-        ====================================================== */}
-
-        <section className="engix-about-process">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-process-heading">
-
-              <span className="engix-about-label">
-                HOW WE WORK
+          <div className="ea-purpose-grid">
+            <article>
+              <span className="ea-eyebrow">
+                OUR MISSION
               </span>
 
-              <h2>
-                From business challenge
-                to production software.
+              <h3>
+                Make Digital Work More Useful
+              </h3>
+
+              <p>
+                Help businesses adopt practical technology and
+                marketing solutions that improve how they operate,
+                communicate and serve their customers.
+              </p>
+            </article>
+
+            <article>
+              <span className="ea-eyebrow">
+                OUR VISION
+              </span>
+
+              <h3>
+                Build Relationships Through Dependable Work
+              </h3>
+
+              <p>
+                Become a trusted services partner by combining
+                thoughtful advice, clear collaboration and
+                consistent attention to delivery quality.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* CAPABILITIES */}
+      <section
+        className="ea-section ea-soft"
+        aria-labelledby="ea-services"
+      >
+        <div className="ea-shell">
+          <div className="ea-heading">
+            <span className="ea-eyebrow">
+              OUR EXPERTISE
+            </span>
+
+            <h2 id="ea-services">
+              IT and Digital Marketing, Connected by Your Goals
+            </h2>
+
+            <p>
+              Choose the capabilities your business needs. We
+              discuss how development, design, automation and
+              marketing can work together within the engagement.
+            </p>
+          </div>
+
+          <CardGrid items={capabilities} />
+
+          <Link className="ea-text-link" to="/services">
+            View our services
+
+            <ArrowUpRight
+              size={19}
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
+      </section>
+
+      {/* DELIVERY APPROACH */}
+      <section
+        className="ea-section"
+        aria-labelledby="ea-approach"
+      >
+        <div className="ea-shell ea-split">
+          <figure className="ea-photo">
+            <AboutImage
+              name="office"
+              alt="Stock photograph of a bright office lounge with meeting tables and seating"
+            />
+
+            <figcaption>
+              Space for clear thinking and organized work.
+            </figcaption>
+          </figure>
+
+          <div>
+            <span className="ea-eyebrow">
+              OUR DELIVERY APPROACH
+            </span>
+
+            <h2 id="ea-approach">
+              Good Work Starts with a Shared Understanding
+            </h2>
+
+            <p>
+              Before delivery begins, we discuss what success means
+              for your business, what needs to be included and which
+              dependencies could affect the work.
+            </p>
+
+            <p>
+              For development, this may include existing systems,
+              user roles, integrations and deployment requirements.
+              For marketing, it may include audience research,
+              messaging, channels, content and reporting.
+            </p>
+
+            <Checklist
+              items={[
+                'Defined scope and practical priorities',
+                'Documented requirements and key decisions',
+                'Planned reviews and clear responsibilities',
+                'Quality checks appropriate to the work',
+                'Handover and support arrangements agreed in advance'
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ENGINEERING */}
+      <section
+        className="ea-section ea-soft"
+        aria-labelledby="ea-engineering"
+      >
+        <div className="ea-shell">
+          <div className="ea-split">
+            <div>
+              <span className="ea-eyebrow">
+                ENGINEERING QUALITY
+              </span>
+
+              <h2 id="ea-engineering">
+                Software Designed for Everyday Business Use
               </h2>
 
               <p>
-                Our process provides enough structure to keep development
-                predictable while remaining flexible enough to respond
-                when product priorities evolve.
+                A useful business application needs more than an
+                attractive interface. It needs to support real
+                workflows, exchange information reliably and remain
+                understandable when requirements change.
               </p>
 
+              <p>
+                We consider architecture, user experience,
+                integrations and operational needs together.
+                Technology choices are discussed around your
+                requirements, existing systems and the resources
+                available to maintain the solution.
+              </p>
+
+              <Checklist
+                items={[
+                  'User journeys connected to business workflows',
+                  'Frontend, backend and integrations planned together',
+                  'Performance and accessibility considered during development',
+                  'Support and future enhancements defined within scope'
+                ]}
+              />
             </div>
 
-
-            <div className="engix-about-process-grid">
-
-              {process.map((step, index) => (
-                <article
-                  key={step.number}
-                  className={`engix-about-process-step step-${index + 1}`}
-                >
-
-                  <span>
-                    {step.number}
-                  </span>
-
-                  <h3>
-                    {step.title}
-                  </h3>
-
-                  <p>
-                    {step.description}
-                  </p>
-
-                </article>
-              ))}
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            ENGINEERING IMAGE
-        ====================================================== */}
-
-        <section className="engix-about-engineering">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-engineering-grid">
-
-              <div className="engix-about-engineering-copy">
-
-                <span className="engix-about-label">
-                  ENGINEERING CULTURE
-                </span>
-
-                <h2>
-                  We care about what
-                  happens after launch.
-                </h2>
-
-                <p>
-                  Shipping the first release is only one stage of a
-                  product’s life. Architecture choices, code quality,
-                  deployment processes and documentation influence how
-                  easily that product can continue to improve.
-                </p>
-
-                <p>
-                  That is why we think about scalability,
-                  maintainability, performance and operational reliability
-                  throughout development — not as problems to solve later.
-                </p>
-
-                <Link
-                  to="/services"
-                  className="engix-about-text-link"
-                >
-                  Explore engineering services
-
-                  <ArrowUpRight
-                    size={18}
-                    strokeWidth={1.7}
-                  />
-                </Link>
-
-              </div>
-
-
-              <div className="engix-about-engineering-image">
-
-                <img
-                  src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1800&q=90"
-                  alt="Professional software engineering team working"
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            PRINCIPLES
-        ====================================================== */}
-
-        <section className="engix-about-principles">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-principles-heading">
-
-              <span className="engix-about-label">
-                WHAT GUIDES US
-              </span>
-
-              <h2>
-                Principles behind
-                the way we build.
-              </h2>
-
-            </div>
-
-
-            <div className="engix-about-principles-grid">
-
-              {principles.map((principle, index) => {
-                const Icon = principle.icon;
-
-                return (
-                  <article key={principle.title}>
-
-                    <div className={`engix-about-principle-icon principle-${index + 1}`}>
-
-                      <Icon
-                        size={28}
-                        strokeWidth={1.6}
-                      />
-
-                    </div>
-
-                    <span>
-                      0{index + 1}
-                    </span>
-
-                    <h3>
-                      {principle.title}
-                    </h3>
-
-                    <p>
-                      {principle.description}
-                    </p>
-
-                  </article>
-                );
-              })}
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            MARKETS
-        ====================================================== */}
-
-        <section className="engix-about-markets">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-markets-grid">
-
-              <div>
-
-                <span className="engix-about-label">
-                  WHO WE WORK WITH
-                </span>
-
-                <h2>
-                  Technology for businesses
-                  at different stages of growth.
-                </h2>
-
-              </div>
-
-
-              <div className="engix-about-market-content">
-
-                <p>
-                  Our delivery model can support early-stage product
-                  development as well as established businesses modernizing
-                  existing operations and technology systems.
-                </p>
-
-                <div className="engix-about-market-tags">
-
-                  {markets.map((market) => (
-                    <span key={market}>
-                      {market}
-                    </span>
-                  ))}
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            STATEMENT
-        ====================================================== */}
-
-        <section className="engix-about-statement">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-statement-inner">
-
-              <Globe2
-                size={38}
-                strokeWidth={1.4}
+            <figure className="ea-photo">
+              <AboutImage
+                name="engineering"
+                alt="Stock photograph of programming code displayed on a desktop monitor"
               />
 
-              <blockquote>
-                We believe strong digital products happen when
-                business understanding, thoughtful experience
-                design and dependable engineering work together.
-              </blockquote>
+              <figcaption>
+                Engineering with the next stage in mind.
+              </figcaption>
+            </figure>
+          </div>
 
-              <span>
-                ENGIX TECH PRIVATE LIMITED
+          <CardGrid
+            items={engineeringStandards}
+            className="ea-three-grid ea-followup-grid"
+          />
+        </div>
+      </section>
+
+      {/* DIGITAL MARKETING */}
+      <section
+        className="ea-section"
+        aria-labelledby="ea-marketing"
+      >
+        <div className="ea-shell">
+          <div className="ea-split">
+            <figure className="ea-photo">
+              <AboutImage
+                name="marketing"
+                alt="Stock photograph of professionals reviewing documents and planning at a desk"
+              />
+
+              <figcaption>
+                Research, communication and measurement.
+              </figcaption>
+            </figure>
+
+            <div>
+              <span className="ea-eyebrow">
+                DIGITAL MARKETING
               </span>
 
-            </div>
+              <h2 id="ea-marketing">
+                A Clearer Digital Presence. A More Coordinated
+                Marketing Approach.
+              </h2>
 
-          </div>
+              <p>
+                Your website, content and campaigns should
+                communicate a consistent message. We help connect
+                the technical and creative work so your audience
+                can understand your services and find a clear
+                next step.
+              </p>
 
-        </section>
+              <p>
+                Marketing engagements begin with your objectives,
+                target audience, current channels and available
+                budget. Reporting focuses on the measurements
+                agreed for the work, helping you understand what
+                to review and improve.
+              </p>
 
-
-        {/* =====================================================
-            CTA
-        ====================================================== */}
-
-        <section className="engix-about-cta">
-
-          <div className="engix-about-shell">
-
-            <div className="engix-about-cta-grid">
-
-              <div>
-
-                <span className="engix-about-label">
-                  LET'S WORK TOGETHER
-                </span>
-
-                <h2>
-                  Have a technology
-                  challenge worth solving?
-                </h2>
+              <div className="ea-note">
+                <strong>
+                  Planned around your business
+                </strong>
 
                 <p>
-                  Tell us what you are trying to launch, improve or
-                  transform. We can help define the right product,
-                  experience and engineering approach.
+                  Channel selection, content priorities and
+                  campaign recommendations depend on your market,
+                  audience and engagement scope.
                 </p>
-
               </div>
-
-
-              <Link
-                to="/contact"
-                className="engix-about-cta-btn"
-              >
-                Start a conversation
-
-                <span>
-                  <ArrowUpRight
-                    size={21}
-                    strokeWidth={1.8}
-                  />
-                </span>
-              </Link>
-
             </div>
-
           </div>
 
-        </section>
-
-      </main>
-
-
-      <style>{`
-
-        /* =====================================================
-           BASE
-        ====================================================== */
-
-        .engix-about-page {
-          --black: #050505;
-          --ink: #111318;
-
-          --white: #ffffff;
-
-          --lavender: #e9e6ff;
-          --yellow: #fff14f;
-          --mint: #dff5df;
-          --peach: #f4dfd2;
-
-          --gray: #686b72;
-
-          --line:
-            rgba(17,19,24,.11);
-
-          background:
-            #ffffff;
-
-          color:
-            var(--ink);
-
-          overflow:
-            hidden;
-        }
-
-        .engix-about-shell {
-          width:
-            min(1240px, calc(100% - 56px));
-
-          margin:
-            0 auto;
-        }
-
-        .engix-about-label {
-          display:
-            inline-block;
-
-          width:
-            max-content;
-
-          padding:
-            7px 11px;
-
-          background:
-            var(--lavender);
-
-          color:
-            #35304b;
-
-          font-size:
-            10px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .11em;
-        }
-
-
-        /* =====================================================
-           HERO
-        ====================================================== */
-
-        .engix-about-hero {
-          padding:
-            95px 0 0;
-
-          background:
-            #ffffff;
-        }
-
-        .engix-about-hero-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            1.05fr .95fr;
-
-          gap:
-            75px;
-
-          align-items:
-            end;
-        }
-
-        .engix-about-hero-copy {
-          padding:
-            70px 0 100px;
-        }
-
-        .engix-about-hero h1 {
-          max-width:
-            820px;
-
-          margin:
-            27px 0 0;
-
-          color:
-            var(--ink);
-
-          font-size:
-            clamp(4rem,7vw,7.2rem);
-
-          line-height:
-            .89;
-
-          letter-spacing:
-            -.07em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-hero-intro {
-          max-width:
-            680px;
-
-          margin:
-            38px 0 0;
-
-          color:
-            #505259;
-
-          font-size:
-            clamp(1.15rem,1.6vw,1.4rem);
-
-          line-height:
-            1.65;
-
-          font-weight:
-            500;
-        }
-
-        .engix-about-hero-secondary {
-          max-width:
-            680px;
-
-          margin:
-            18px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.78;
-        }
-
-
-        /* HERO ACTIONS */
-
-        .engix-about-hero-actions {
-          display:
-            flex;
-
-          flex-wrap:
-            wrap;
-
-          gap:
-            13px;
-
-          margin-top:
-            38px;
-        }
-
-        .engix-about-primary-btn,
-        .engix-about-secondary-btn {
-          min-height:
-            57px;
-
-          padding:
-            0 22px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          gap:
-            9px;
-
-          text-decoration:
-            none;
-
-          font-size:
-            14px;
-
-          font-weight:
-            700;
-
-          transition:
-            transform .2s ease,
-            background .2s ease;
-        }
-
-        .engix-about-primary-btn {
-          background:
-            var(--black);
-
-          color:
-            white;
-        }
-
-        .engix-about-primary-btn svg {
-          color:
-            var(--yellow);
-        }
-
-        .engix-about-secondary-btn {
-          background:
-            white;
-
-          color:
-            var(--black);
-
-          border:
-            1px solid rgba(5,5,5,.16);
-        }
-
-        .engix-about-primary-btn:hover,
-        .engix-about-secondary-btn:hover {
-          transform:
-            translateY(-2px);
-        }
-
-
-        /* HERO IMAGE */
-
-        .engix-about-hero-image {
-          position:
-            relative;
-
-          min-height:
-            690px;
-
-          overflow:
-            hidden;
-        }
-
-        .engix-about-hero-image img {
-          width:
-            100%;
-
-          height:
-            690px;
-
-          display:
-            block;
-
-          object-fit:
-            cover;
-
-          transition:
-            transform .7s ease;
-        }
-
-        .engix-about-hero-image:hover img {
-          transform:
-            scale(1.025);
-        }
-
-        .engix-about-hero-image::after {
-          content:
-            '';
-
-          position:
-            absolute;
-
-          inset:
-            0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 50%,
-              rgba(5,5,5,.72)
-            );
-        }
-
-        .engix-about-image-overlay {
-          position:
-            absolute;
-
-          z-index:
-            2;
-
-          left:
-            32px;
-
-          bottom:
-            32px;
-
-          color:
-            white;
-        }
-
-        .engix-about-image-overlay span {
-          display:
-            inline-block;
-
-          margin-bottom:
-            10px;
-
-          padding:
-            5px 8px;
-
-          background:
-            var(--yellow);
-
-          color:
-            #050505;
-
-          font-size:
-            9px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .1em;
-        }
-
-        .engix-about-image-overlay strong {
-          display:
-            block;
-
-          font-size:
-            30px;
-
-          line-height:
-            1.04;
-
-          letter-spacing:
-            -.04em;
-        }
-
-
-        /* =====================================================
-           COMPANY
-        ====================================================== */
-
-        .engix-about-company {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-company-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            .45fr 1.55fr;
-
-          gap:
-            80px;
-        }
-
-        .engix-about-company-label span {
-          display:
-            inline-block;
-
-          padding:
-            7px 11px;
-
-          background:
-            var(--lavender);
-
-          color:
-            #35304b;
-
-          font-size:
-            10px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .11em;
-        }
-
-        .engix-about-company-content h2 {
-          max-width:
-            900px;
-
-          margin:
-            0;
-
-          font-size:
-            clamp(3rem,5vw,5.2rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-company-text-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            1fr 1fr;
-
-          gap:
-            25px 50px;
-
-          margin-top:
-            45px;
-        }
-
-        .engix-about-company-text-grid p {
-          margin:
-            0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.78;
-        }
-
-
-        /* =====================================================
-           WIDE IMAGE
-        ====================================================== */
-
-        .engix-about-wide-image {
-          position:
-            relative;
-
-          width:
-            100%;
-
-          height:
-            min(700px,65vw);
-
-          min-height:
-            500px;
-
-          overflow:
-            hidden;
-        }
-
-        .engix-about-wide-image img {
-          width:
-            100%;
-
-          height:
-            100%;
-
-          object-fit:
-            cover;
-
-          display:
-            block;
-        }
-
-        .engix-about-wide-image::after {
-          content:
-            '';
-
-          position:
-            absolute;
-
-          inset:
-            0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 55%,
-              rgba(5,5,5,.72)
-            );
-        }
-
-        .engix-about-wide-overlay {
-          position:
-            absolute;
-
-          z-index:
-            2;
-
-          left:
-            max(28px,calc((100vw - 1240px)/2));
-
-          bottom:
-            40px;
-
-          max-width:
-            600px;
-
-          color:
-            white;
-        }
-
-        .engix-about-wide-overlay span {
-          display:
-            inline-block;
-
-          margin-bottom:
-            12px;
-
-          padding:
-            5px 8px;
-
-          background:
-            var(--yellow);
-
-          color:
-            var(--black);
-
-          font-size:
-            9px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .1em;
-        }
-
-        .engix-about-wide-overlay strong {
-          display:
-            block;
-
-          font-size:
-            clamp(2.3rem,4vw,4rem);
-
-          line-height:
-            1;
-
-          letter-spacing:
-            -.05em;
-        }
-
-
-        /* =====================================================
-           COMMON SECTION HEADING
-        ====================================================== */
-
-        .engix-about-section-heading {
-          display:
-            grid;
-
-          grid-template-columns:
-            1.25fr .75fr;
-
-          gap:
-            80px;
-
-          align-items:
-            end;
-
-          margin-bottom:
-            65px;
-        }
-
-        .engix-about-section-heading h2 {
-          max-width:
-            850px;
-
-          margin:
-            20px 0 0;
-
-          color:
-            var(--ink);
-
-          font-size:
-            clamp(3rem,5vw,5.2rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-section-heading > p {
-          margin:
-            0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            16px;
-
-          line-height:
-            1.75;
-        }
-
-
-        /* =====================================================
-           CAPABILITIES
-        ====================================================== */
-
-        .engix-about-capabilities {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-        }
-
-        .engix-about-capabilities-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(3,1fr);
-
-          gap:
-            14px;
-        }
-
-        .engix-about-capability {
-          position:
-            relative;
-
-          min-height:
-            380px;
-
-          padding:
-            32px;
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          border:
-            1px solid var(--line);
-
-          background:
-            #ffffff;
-
-          overflow:
-            hidden;
-
-          transition:
-            transform .25s ease,
-            box-shadow .25s ease;
-        }
-
-        .engix-about-capability::before {
-          content:
-            '';
-
-          position:
-            absolute;
-
-          top:
-            0;
-
-          left:
-            0;
-
-          right:
-            0;
-
-          height:
-            6px;
-        }
-
-        .capability-lavender::before {
-          background:
-            var(--lavender);
-        }
-
-        .capability-yellow::before {
-          background:
-            var(--yellow);
-        }
-
-        .capability-mint::before {
-          background:
-            var(--mint);
-        }
-
-        .capability-peach::before {
-          background:
-            var(--peach);
-        }
-
-        .engix-about-capability:hover {
-          transform:
-            translateY(-4px);
-
-          box-shadow:
-            0 22px 50px rgba(0,0,0,.055);
-        }
-
-        .engix-about-capability-top {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-        }
-
-        .engix-about-capability-top > span {
-          color:
-            #7e7f84;
-
-          font-size:
-            11px;
-
-          font-weight:
-            700;
-        }
-
-        .engix-about-capability-top > div {
-          width:
-            49px;
-
-          height:
-            49px;
-
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          color:
-            var(--ink);
-        }
-
-        .capability-lavender
-        .engix-about-capability-top > div {
-          background:
-            var(--lavender);
-        }
-
-        .capability-yellow
-        .engix-about-capability-top > div {
-          background:
-            var(--yellow);
-        }
-
-        .capability-mint
-        .engix-about-capability-top > div {
-          background:
-            var(--mint);
-        }
-
-        .capability-peach
-        .engix-about-capability-top > div {
-          background:
-            var(--peach);
-        }
-
-        .engix-about-capability h3 {
-          margin:
-            auto 0 15px;
-
-          font-size:
-            27px;
-
-          line-height:
-            1.05;
-
-          letter-spacing:
-            -.04em;
-        }
-
-        .engix-about-capability p {
-          margin:
-            0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            13px;
-
-          line-height:
-            1.72;
-        }
-
-
-        /* =====================================================
-           GLOBAL
-        ====================================================== */
-
-        .engix-about-global {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-global-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            .95fr 1.05fr;
-
-          gap:
-            85px;
-
-          align-items:
-            center;
-        }
-
-        .engix-about-global-image {
-          position:
-            relative;
-
-          height:
-            650px;
-
-          overflow:
-            hidden;
-        }
-
-        .engix-about-global-image img {
-          width:
-            100%;
-
-          height:
-            100%;
-
-          object-fit:
-            cover;
-        }
-
-        .engix-about-global-image::after {
-          content:
-            '';
-
-          position:
-            absolute;
-
-          inset:
-            0;
-
-          background:
-            linear-gradient(
-              180deg,
-              transparent 50%,
-              rgba(5,5,5,.7)
-            );
-        }
-
-        .engix-about-global-image > div {
-          position:
-            absolute;
-
-          z-index:
-            2;
-
-          left:
-            30px;
-
-          bottom:
-            30px;
-
-          color:
-            white;
-        }
-
-        .engix-about-global-image span {
-          display:
-            inline-block;
-
-          margin-bottom:
-            10px;
-
-          padding:
-            5px 8px;
-
-          background:
-            var(--yellow);
-
-          color:
-            var(--black);
-
-          font-size:
-            9px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .1em;
-        }
-
-        .engix-about-global-image strong {
-          display:
-            block;
-
-          font-size:
-            clamp(2rem,3vw,3rem);
-
-          line-height:
-            1.02;
-
-          letter-spacing:
-            -.045em;
-        }
-
-        .engix-about-global-copy h2 {
-          max-width:
-            700px;
-
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3rem,4.8vw,5rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-global-copy > p {
-          max-width:
-            680px;
-
-          margin:
-            25px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.78;
-        }
-
-        .engix-about-global-points {
-          margin-top:
-            35px;
-        }
-
-        .engix-about-global-points > div {
-          padding:
-            15px 0;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            11px;
-
-          border-top:
-            1px solid var(--line);
-
-          color:
-            #4e5057;
-
-          font-size:
-            13px;
-        }
-
-
-        /* =====================================================
-           PROCESS
-        ====================================================== */
-
-        .engix-about-process {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-process-heading {
-          max-width:
-            900px;
-
-          margin-bottom:
-            65px;
-        }
-
-        .engix-about-process-heading h2 {
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3rem,5vw,5.2rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-process-heading p {
-          max-width:
-            700px;
-
-          margin:
-            25px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.75;
-        }
-
-        .engix-about-process-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(3,1fr);
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-process-step {
-          min-height:
-            330px;
-
-          padding:
-            30px;
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          border-right:
-            1px solid var(--line);
-
-          border-bottom:
-            1px solid var(--line);
-        }
-
-        .engix-about-process-step:nth-child(3n + 1) {
-          padding-left:
-            0;
-        }
-
-        .engix-about-process-step:nth-child(3n) {
-          border-right:
-            0;
-        }
-
-        .engix-about-process-step > span {
-          width:
-            max-content;
-
-          padding:
-            6px 9px;
-
-          background:
-            var(--lavender);
-
-          font-size:
-            10px;
-
-          font-weight:
-            800;
-        }
-
-        .step-2 > span,
-        .step-6 > span {
-          background:
-            var(--yellow);
-        }
-
-        .step-3 > span {
-          background:
-            var(--mint);
-        }
-
-        .step-4 > span {
-          background:
-            var(--peach);
-        }
-
-        .step-5 > span {
-          background:
-            var(--lavender);
-        }
-
-        .engix-about-process-step h3 {
-          margin:
-            auto 0 15px;
-
-          color:
-            var(--ink);
-
-          font-size:
-            29px;
-
-          letter-spacing:
-            -.04em;
-        }
-
-        .engix-about-process-step p {
-          margin:
-            0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            13px;
-
-          line-height:
-            1.72;
-        }
-
-
-        /* =====================================================
-           ENGINEERING
-        ====================================================== */
-
-        .engix-about-engineering {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-        }
-
-        .engix-about-engineering-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            .9fr 1.1fr;
-
-          gap:
-            80px;
-
-          align-items:
-            center;
-        }
-
-        .engix-about-engineering-copy h2 {
-          max-width:
-            660px;
-
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3rem,4.8vw,5rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-engineering-copy p {
-          max-width:
-            620px;
-
-          margin:
-            25px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.78;
-        }
-
-        .engix-about-text-link {
-          width:
-            max-content;
-
-          margin-top:
-            30px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          gap:
-            8px;
-
-          color:
-            var(--ink);
-
-          text-decoration:
-            none;
-
-          font-size:
-            13px;
-
-          font-weight:
-            750;
-
-          border-bottom:
-            1px solid var(--ink);
-
-          padding-bottom:
-            4px;
-        }
-
-        .engix-about-engineering-image {
-          height:
-            620px;
-
-          overflow:
-            hidden;
-        }
-
-        .engix-about-engineering-image img {
-          width:
-            100%;
-
-          height:
-            100%;
-
-          object-fit:
-            cover;
-
-          transition:
-            transform .65s ease;
-        }
-
-        .engix-about-engineering-image:hover img {
-          transform:
-            scale(1.025);
-        }
-
-
-        /* =====================================================
-           PRINCIPLES
-        ====================================================== */
-
-        .engix-about-principles {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-principles-heading {
-          max-width:
-            850px;
-
-          margin-bottom:
-            60px;
-        }
-
-        .engix-about-principles-heading h2 {
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3rem,5vw,5.2rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-principles-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(4,1fr);
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-principles-grid article {
-          min-height:
-            360px;
-
-          padding:
-            30px;
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          border-right:
-            1px solid var(--line);
-        }
-
-        .engix-about-principles-grid article:first-child {
-          padding-left:
-            0;
-        }
-
-        .engix-about-principles-grid article:last-child {
-          border-right:
-            0;
-        }
-
-        .engix-about-principle-icon {
-          width:
-            48px;
-
-          height:
-            48px;
-
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          margin-bottom:
-            20px;
-
-          color:
-            var(--ink);
-        }
-
-        .principle-1 {
-          background:
-            var(--lavender);
-        }
-
-        .principle-2 {
-          background:
-            var(--yellow);
-        }
-
-        .principle-3 {
-          background:
-            var(--mint);
-        }
-
-        .principle-4 {
-          background:
-            var(--peach);
-        }
-
-        .engix-about-principles-grid article > span {
-          color:
-            #88898f;
-
-          font-size:
-            10px;
-        }
-
-        .engix-about-principles-grid h3 {
-          margin:
-            auto 0 14px;
-
-          font-size:
-            23px;
-
-          line-height:
-            1.08;
-
-          letter-spacing:
-            -.04em;
-        }
-
-        .engix-about-principles-grid p {
-          margin:
-            0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            13px;
-
-          line-height:
-            1.72;
-        }
-
-
-        /* =====================================================
-           MARKETS
-        ====================================================== */
-
-        .engix-about-markets {
-          padding:
-            120px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-markets-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            1fr 1fr;
-
-          gap:
-            90px;
-        }
-
-        .engix-about-markets h2 {
-          max-width:
-            700px;
-
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3rem,4.8vw,5rem);
-
-          line-height:
-            .97;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-market-content > p {
-          margin:
-            40px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.75;
-        }
-
-        .engix-about-market-tags {
-          display:
-            flex;
-
-          flex-wrap:
-            wrap;
-
-          gap:
-            8px;
-
-          margin-top:
-            35px;
-        }
-
-        .engix-about-market-tags span {
-          padding:
-            10px 13px;
-
-          border:
-            1px solid var(--line);
-
-          color:
-            #46474e;
-
-          font-size:
-            11px;
-        }
-
-        .engix-about-market-tags span:nth-child(4n + 1) {
-          background:
-            var(--lavender);
-        }
-
-        .engix-about-market-tags span:nth-child(4n + 2) {
-          background:
-            var(--yellow);
-        }
-
-        .engix-about-market-tags span:nth-child(4n + 3) {
-          background:
-            var(--mint);
-        }
-
-        .engix-about-market-tags span:nth-child(4n + 4) {
-          background:
-            var(--peach);
-        }
-
-
-        /* =====================================================
-           STATEMENT
-        ====================================================== */
-
-        .engix-about-statement {
-          padding:
-            100px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-statement-inner {
-          max-width:
-            950px;
-
-          margin:
-            0 auto;
-
-          text-align:
-            center;
-        }
-
-        .engix-about-statement-inner > svg {
-          width:
-            58px;
-
-          height:
-            58px;
-
-          padding:
-            12px;
-
-          background:
-            var(--yellow);
-
-          color:
-            var(--black);
-        }
-
-        .engix-about-statement blockquote {
-          margin:
-            35px 0 25px;
-
-          color:
-            var(--ink);
-
-          font-size:
-            clamp(2.1rem,4vw,4rem);
-
-          line-height:
-            1.07;
-
-          letter-spacing:
-            -.05em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-statement-inner > span {
-          color:
-            #7b7c82;
-
-          font-size:
-            10px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .12em;
-        }
-
-
-        /* =====================================================
-           CTA
-        ====================================================== */
-
-        .engix-about-cta {
-          position:
-            relative;
-
-          padding:
-            110px 0;
-
-          background:
-            #ffffff;
-
-          border-top:
-            1px solid var(--line);
-        }
-
-        .engix-about-cta::before {
-          content:
-            '';
-
-          position:
-            absolute;
-
-          top:
-            0;
-
-          left:
-            50%;
-
-          width:
-            min(1240px,calc(100% - 56px));
-
-          height:
-            5px;
-
-          transform:
-            translateX(-50%);
-
-          background:
-            var(--yellow);
-        }
-
-        .engix-about-cta-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            1.4fr .6fr;
-
-          gap:
-            80px;
-
-          align-items:
-            end;
-        }
-
-        .engix-about-cta h2 {
-          max-width:
-            900px;
-
-          margin:
-            20px 0 0;
-
-          font-size:
-            clamp(3.3rem,5.5vw,5.8rem);
-
-          line-height:
-            .95;
-
-          letter-spacing:
-            -.065em;
-
-          font-weight:
-            600;
-        }
-
-        .engix-about-cta p {
-          max-width:
-            680px;
-
-          margin:
-            27px 0 0;
-
-          color:
-            var(--gray);
-
-          font-size:
-            15px;
-
-          line-height:
-            1.75;
-        }
-
-        .engix-about-cta-btn {
-          justify-self:
-            end;
-
-          min-height:
-            59px;
-
-          padding:
-            7px 8px 7px 22px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          gap:
-            14px;
-
-          border-radius:
-            999px;
-
-          background:
-            var(--black);
-
-          color:
-            white;
-
-          text-decoration:
-            none;
-
-          font-size:
-            14px;
-
-          font-weight:
-            750;
-
-          transition:
-            transform .2s ease;
-        }
-
-        .engix-about-cta-btn:hover {
-          transform:
-            translateY(-2px);
-        }
-
-        .engix-about-cta-btn > span {
-          width:
-            42px;
-
-          height:
-            42px;
-
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          border-radius:
-            50%;
-
-          background:
-            var(--yellow);
-
-          color:
-            var(--black);
-        }
-
-
-        /* =====================================================
-           TABLET
-        ====================================================== */
-
-        @media(max-width:1000px) {
-
-          .engix-about-hero-grid,
-          .engix-about-global-grid,
-          .engix-about-engineering-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .engix-about-hero-copy {
-            padding-bottom:
-              35px;
-          }
-
-          .engix-about-hero-image,
-          .engix-about-hero-image img {
-            min-height:
-              520px;
-
-            height:
-              520px;
-          }
-
-          .engix-about-company-grid {
-            grid-template-columns:
-              1fr;
-
-            gap:
-              30px;
-          }
-
-          .engix-about-section-heading {
-            grid-template-columns:
-              1fr;
-
-            gap:
-              25px;
-          }
-
-          .engix-about-capabilities-grid {
-            grid-template-columns:
-              repeat(2,1fr);
-          }
-
-          .engix-about-global-image {
-            height:
-              520px;
-          }
-
-          .engix-about-process-grid {
-            grid-template-columns:
-              repeat(2,1fr);
-          }
-
-          .engix-about-process-step:nth-child(3n) {
-            border-right:
-              1px solid var(--line);
-          }
-
-          .engix-about-process-step:nth-child(2n) {
-            border-right:
-              0;
-          }
-
-          .engix-about-process-step:nth-child(3n + 1) {
-            padding-left:
-              30px;
-          }
-
-          .engix-about-process-step:nth-child(2n + 1) {
-            padding-left:
-              0;
-          }
-
-          .engix-about-engineering-image {
-            height:
-              520px;
-          }
-
-          .engix-about-principles-grid {
-            grid-template-columns:
-              repeat(2,1fr);
-          }
-
-          .engix-about-principles-grid article {
-            border-bottom:
-              1px solid var(--line);
-          }
-
-          .engix-about-markets-grid {
-            grid-template-columns:
-              1fr;
-
-            gap:
-              30px;
-          }
-
-          .engix-about-market-content > p {
-            margin-top:
-              0;
-          }
-
-          .engix-about-cta-grid {
-            grid-template-columns:
-              1fr;
-
-            gap:
-              45px;
-          }
-
-          .engix-about-cta-btn {
-            justify-self:
-              start;
-          }
-
-        }
-
-
-        /* =====================================================
-           MOBILE
-        ====================================================== */
-
-        @media(max-width:650px) {
-
-          .engix-about-shell {
-            width:
-              calc(100% - 32px);
-          }
-
-          .engix-about-hero {
-            padding-top:
-              45px;
-          }
-
-          .engix-about-hero-copy {
-            padding:
-              45px 0 55px;
-          }
-
-          .engix-about-hero h1 {
-            font-size:
-              clamp(3.7rem,17vw,5.5rem);
-          }
-
-          .engix-about-primary-btn,
-          .engix-about-secondary-btn {
-            width:
-              100%;
-          }
-
-          .engix-about-hero-image,
-          .engix-about-hero-image img {
-            min-height:
-              410px;
-
-            height:
-              410px;
-          }
-
-          .engix-about-company,
-          .engix-about-capabilities,
-          .engix-about-global,
-          .engix-about-process,
-          .engix-about-engineering,
-          .engix-about-principles,
-          .engix-about-markets {
-            padding:
-              85px 0;
-          }
-
-          .engix-about-company-text-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .engix-about-wide-image {
-            min-height:
-              420px;
-
-            height:
-              420px;
-          }
-
-          .engix-about-wide-overlay {
-            left:
-              20px;
-
-            right:
-              20px;
-
-            bottom:
-              24px;
-          }
-
-          .engix-about-capabilities-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .engix-about-capability {
-            min-height:
-              350px;
-          }
-
-          .engix-about-global-image,
-          .engix-about-engineering-image {
-            height:
-              410px;
-          }
-
-          .engix-about-process-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .engix-about-process-step,
-          .engix-about-process-step:nth-child(3n + 1),
-          .engix-about-process-step:nth-child(2n + 1) {
-            min-height:
-              270px;
-
-            padding:
-              26px 0;
-
-            border-right:
-              0;
-          }
-
-          .engix-about-principles-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .engix-about-principles-grid article,
-          .engix-about-principles-grid article:first-child {
-            min-height:
-              290px;
-
-            padding:
-              28px 0;
-
-            border-right:
-              0;
-          }
-
-          .engix-about-statement {
-            padding:
-              75px 0;
-          }
-
-          .engix-about-cta {
-            padding:
-              85px 0;
-          }
-
-          .engix-about-cta::before {
-            width:
-              calc(100% - 32px);
-          }
-
-          .engix-about-cta-btn {
-            width:
-              100%;
-
-            justify-content:
-              space-between;
-          }
-
-        }
-
-      `}</style>
-    </>
+          <div className="ea-marketing-grid">
+            {marketingServices.map(({ title, text }) => (
+              <article key={title}>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRINCIPLES */}
+      <section
+        className="ea-section ea-green"
+        aria-labelledby="ea-values"
+      >
+        <div className="ea-shell">
+          <div className="ea-heading">
+            <span className="ea-eyebrow">
+              WHAT GUIDES US
+            </span>
+
+            <h2 id="ea-values">
+              Professional Standards. Practical Decisions.
+            </h2>
+
+            <p>
+              These principles guide how we assess requirements,
+              collaborate with clients and deliver the agreed work.
+            </p>
+          </div>
+
+          <CardGrid items={principles} />
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section
+        className="ea-section"
+        aria-labelledby="ea-process"
+      >
+        <div className="ea-shell">
+          <div className="ea-heading">
+            <span className="ea-eyebrow">
+              HOW WE WORK
+            </span>
+
+            <h2 id="ea-process">
+              A Clear Path from Conversation to Delivery
+            </h2>
+
+            <p>
+              We organize the engagement into understandable
+              stages, with review points that allow decisions to
+              improve as the work develops.
+            </p>
+          </div>
+
+          <CardGrid
+            items={process}
+            className="ea-process-grid"
+          />
+        </div>
+      </section>
+
+      {/* INTERNATIONAL COLLABORATION */}
+      <section
+        className="ea-section ea-soft"
+        aria-labelledby="ea-global"
+      >
+        <div className="ea-shell ea-split">
+          <div>
+            <span className="ea-eyebrow">
+              DOMESTIC & INTERNATIONAL COLLABORATION
+            </span>
+
+            <h2 id="ea-global">
+              A Technology Partner That Works Beyond Borders
+            </h2>
+
+            <p>
+              Engix collaborates with businesses across locations
+              through structured remote working practices.
+              Project scope, dependencies and communication
+              arrangements are agreed around the engagement.
+            </p>
+
+            <h3>
+              Clear Coordination Across Locations
+            </h3>
+
+            <p>
+              Shared priorities and documented decisions help keep
+              development and marketing activities organized.
+              We discuss how your team wants to work and establish
+              practical review points.
+            </p>
+
+            <Checklist
+              items={[
+                'Agreed communication channels and progress reviews',
+                'Delivery stages that make dependencies visible',
+                'Continued collaboration based on the agreed scope'
+              ]}
+            />
+          </div>
+
+          <figure className="ea-photo">
+            <AboutImage
+              name="session"
+              alt="Stock photograph of colleagues reviewing code together at a computer"
+            />
+
+            <figcaption>
+              Connected teams. Shared priorities.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* ENGAGEMENT OPTIONS */}
+      <section
+        className="ea-section ea-green"
+        aria-labelledby="ea-partnership"
+      >
+        <div className="ea-shell">
+          <div className="ea-heading">
+            <span className="ea-eyebrow">
+              WORKING WITH ENGIX
+            </span>
+
+            <h2 id="ea-partnership">
+              An Engagement Built Around Your Requirements
+            </h2>
+
+            <p>
+              Different priorities call for different working
+              arrangements. We discuss the scope, communication
+              and review process before recommending how the
+              engagement should be organized.
+            </p>
+          </div>
+
+          <CardGrid
+            items={engagementOptions}
+            className="ea-three-grid"
+          />
+
+          <div className="ea-handover">
+            <h3>
+              Clear Handover and Next Steps
+            </h3>
+
+            <p>
+              At the relevant delivery stage, we agree on the
+              documentation, access, training or reporting needed
+              for your team. Any ongoing maintenance, campaign
+              management or additional development is discussed
+              as part of the scope.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* BUSINESS TYPES */}
+      <section
+        className="ea-section"
+        aria-labelledby="ea-businesses"
+      >
+        <div className="ea-shell ea-audiences">
+          <span className="ea-eyebrow">
+            WHO WE WORK WITH
+          </span>
+
+          <h2 id="ea-businesses">
+            Different Businesses. A Focus on Useful Outcomes.
+          </h2>
+
+          <p>
+            We discuss each engagement around its requirements,
+            whether the priority is a stronger online presence,
+            a custom business system or better coordinated
+            digital marketing.
+          </p>
+
+          <ul className="ea-tags">
+            {[
+              'Growing Businesses',
+              'Professional Services',
+              'Technology Companies',
+              'Ecommerce & Retail',
+              'Service Businesses',
+              'Enterprise Teams'
+            ].map(item => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section
+        className="ea-section ea-contact"
+        aria-labelledby="ea-contact-title"
+      >
+        <div className="ea-shell ea-contact-grid">
+          <div>
+            <span className="ea-eyebrow">
+              CONTACT ENGIX
+            </span>
+
+            <h2 id="ea-contact-title">
+              Have a Challenge? Let’s Plan the Right Solution.
+            </h2>
+
+            <p>
+              Share your requirements, existing systems and
+              business priorities. We will discuss the services
+              you need, the proposed scope and the next steps.
+            </p>
+
+            <Link className="ea-button" to="/contact">
+              Discuss your project
+
+              <ArrowUpRight
+                size={20}
+                aria-hidden="true"
+              />
+            </Link>
+          </div>
+
+          <div className="ea-contact-details">
+            <h3>Connect with Engix</h3>
+
+            <a href="mailto:hello@engix.world">
+              <Mail
+                size={22}
+                aria-hidden="true"
+              />
+
+              <span>
+                Email
+                <strong>hello@engix.world</strong>
+              </span>
+            </a>
+
+            <a href="tel:+917355985134">
+              <Phone
+                size={22}
+                aria-hidden="true"
+              />
+
+              <span>
+                Phone
+                <strong>+91 7355985134</strong>
+              </span>
+            </a>
+
+            <p>
+              Engix Tech Private Limited — IT services,
+              custom development and digital marketing.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

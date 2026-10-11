@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 
 import MainLayout from './layouts/MainLayout';
-
+import Blog from './pages/Blog';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import Portfolio from './pages/Portfolio';
@@ -23,6 +23,7 @@ export default function App() {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<Blog />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
       </Route>

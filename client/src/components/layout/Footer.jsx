@@ -1,1353 +1,806 @@
 import { Link } from 'react-router-dom';
-
 import {
   ArrowUpRight,
-  Github,
-  Instagram,
-  Linkedin,
   Mail,
   Phone,
-  MapPin
+  MapPin,
 } from 'lucide-react';
 
+function Linkedin({ size = 22, ...props }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <rect x="3" y="8" width="4" height="13" rx=".5" />
+      <circle cx="5" cy="4" r="2" />
+      <path d="M11 21V8h4v2c1-2 6-3 6 3v8h-4v-7c0-3-2-3-2 0v7Z" />
+    </svg>
+  );
+}
 
-export default function Footer() {
+function Instagram({ size = 22, ...props }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle
+        cx="17.5"
+        cy="6.5"
+        r=".8"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
+function Github({ size = 22, ...props }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M9 21v-3c-4 1-4-2-6-3m12 6v-4c0-1-.3-1.6-.8-2 3-.3 5.8-1.4 5.8-6a5 5 0 0 0-1.4-3.5c.1-1 .1-2-.4-3.5 0 0-1.2-.3-3.8 1.4a13 13 0 0 0-6.8 0C5 1.7 3.8 2 3.8 2c-.5 1.5-.5 2.5-.4 3.5A5 5 0 0 0 2 9c0 4.6 2.8 5.7 5.8 6-.5.4-.8 1-.8 2v4" />
+    </svg>
+  );
+}
+
+const companyLinks = [
+  { label: 'Home', path: '/' },
+  { label: 'About Us', path: '/about' },
+  { label: 'Services', path: '/services' },
+  { label: 'Projects', path: '/portfolio' },
+  { label: 'Blog & Resources', path: '/blog' },
+  { label: 'Contact', path: '/contact' },
+];
+
+const capabilities = [
+  'Custom Software Development',
+  'Web & Mobile Development',
+  'UI/UX Design',
+  'AI & Workflow Automation',
+  'Backend & API Engineering',
+  'Cloud & DevOps',
+];
+
+const marketingServices = [
+  'Search Engine Optimisation',
+  'Paid Advertising',
+  'Social Media Marketing',
+  'Content & Email Marketing',
+  'Branding & Creative Design',
+];
+
+const defaultLocations = [
+  {
+    id: 'india',
+    label: 'Varanasi, India',
+    address:
+      '552 Sahityanaka Mod, Ramnagar, Varanasi',
+  },
+  {
+    id: 'usa-one',
+    label: 'Las Vegas, USA',
+    address:
+      '4617 Calderwood St, Las Vegas, NV 89103, USA',
+  },
+  {
+    id: 'usa-two',
+    label: 'Austin, USA',
+    address:
+      '223 TX-343 Loop, Austin, TX 78701, USA',
+  },
+  {
+    id: 'canada',
+    label: 'Calgary, Canada',
+    address:
+      '618-640 5 Ave SW, Calgary, AB, Canada',
+  },
+];
+
+// Add your actual public profile URLs.
+// Empty URLs remain hidden, avoiding non-working links.
+const defaultSocialLinks = {
+  linkedin: '',
+  github: '',
+  instagram: '',
+};
+
+const socialPlatforms = [
+  { key: 'linkedin', label: 'LinkedIn', icon: Linkedin },
+  { key: 'github', label: 'GitHub', icon: Github },
+  { key: 'instagram', label: 'Instagram', icon: Instagram },
+];
+
+function isWebUrl(value) {
+  try {
+    return ['https:', 'http:'].includes(
+      new URL(value).protocol
+    );
+  } catch {
+    return false;
+  }
+}
+
+export default function Footer({
+  locations = defaultLocations,
+  socialLinks = defaultSocialLinks,
+}) {
+  const visibleLocations = locations.filter(
+    (location) => location.address?.trim()
+  );
+
+  const visibleSocials = socialPlatforms.filter(
+    (platform) => isWebUrl(socialLinks[platform.key])
+  );
+
   return (
     <>
       <footer className="engix-footer">
-
         <div className="engix-footer-shell">
-
-
-          {/* =========================================
-              TOP BRAND / LINKS
-          ========================================== */}
-
           <div className="engix-footer-top">
-
-
-            {/* =====================================
-                BRAND
-            ====================================== */}
-
             <div className="engix-footer-brand">
-
               <Link
                 to="/"
                 className="engix-footer-logo"
                 aria-label="Engix Home"
               >
-
                 <span className="engix-footer-logo-icon">
-
                   <img
                     src="/logo.png"
                     alt="Engix"
                     className="engix-footer-logo-image"
                   />
-
                 </span>
-
 
                 <strong className="engix-footer-logo-name">
                   Engix
                 </strong>
-
               </Link>
-
 
               <p className="engix-footer-description">
-                We design and engineer digital products,
-                software platforms, mobile applications and
-                AI-enabled solutions for businesses that want
-                technology built with clarity, quality and purpose.
+                Engix Tech Private Limited provides IT
+                services, custom software development and
+                digital marketing for businesses in India
+                and international markets.
               </p>
 
+              <p className="engix-footer-description">
+                From websites and applications to automation
+                and marketing campaigns, we shape our work
+                around your requirements, customers and
+                business priorities.
+              </p>
 
-              <div className="engix-footer-socials">
-
-                <a
-                  href="#"
-                  aria-label="LinkedIn"
+              {visibleSocials.length > 0 && (
+                <div
+                  className="engix-footer-socials"
+                  aria-label="Engix social profiles"
                 >
-                  <Linkedin
-                    size={22}
-                    strokeWidth={1.7}
-                  />
-                </a>
+                  {visibleSocials.map((platform) => {
+                    const Icon = platform.icon;
 
-
-                <a
-                  href="#"
-                  aria-label="GitHub"
-                >
-                  <Github
-                    size={22}
-                    strokeWidth={1.7}
-                  />
-                </a>
-
-
-                <a
-                  href="#"
-                  aria-label="Instagram"
-                >
-                  <Instagram
-                    size={22}
-                    strokeWidth={1.7}
-                  />
-                </a>
-
-              </div>
-
+                    return (
+                      <a
+                        key={platform.key}
+                        href={socialLinks[platform.key]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Engix on ${platform.label} (opens in a new tab)`}
+                      >
+                        <Icon
+                          size={22}
+                          strokeWidth={1.7}
+                          aria-hidden="true"
+                        />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
+            <nav
+              className="engix-footer-column"
+              aria-label="Footer company navigation"
+            >
+              <h3>Company</h3>
 
+              {companyLinks.map((item) => (
+                <Link key={item.path} to={item.path}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-            {/* =====================================
-                COMPANY
-            ====================================== */}
+            <nav
+              className="engix-footer-column"
+              aria-label="Footer IT services"
+            >
+              <h3>IT Services</h3>
 
-            <div className="engix-footer-column">
+              {capabilities.map((item) => (
+                <Link key={item} to="/services">
+                  {item}
+                </Link>
+              ))}
+            </nav>
 
-              <h4>
-                Company
-              </h4>
+            <nav
+              className="engix-footer-column"
+              aria-label="Footer digital marketing services"
+            >
+              <h3>Digital Marketing</h3>
 
-              <Link to="/">
-                Home
-              </Link>
+              {marketingServices.map((item) => (
+                <Link key={item} to="/services">
+                  {item}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-              <Link to="/about">
-                About Us
-              </Link>
+          <section
+            className="engix-footer-connect"
+            aria-labelledby="engix-footer-connect-title"
+          >
+            <h3 id="engix-footer-connect-title">
+              Connect with Engix
+            </h3>
 
-              <Link to="/portfolio">
-                Projects
-              </Link>
-
-              <Link to="/services">
-                Services
-              </Link>
-
-              <Link to="/contact">
-                Contact
-              </Link>
-
-            </div>
-
-
-
-            {/* =====================================
-                CAPABILITIES
-            ====================================== */}
-
-            <div className="engix-footer-column">
-
-              <h4>
-                Capabilities
-              </h4>
-
-              <span>
-                Software Engineering
-              </span>
-
-              <span>
-                Product & UI/UX Design
-              </span>
-
-              <span>
-                Web & Mobile Development
-              </span>
-
-              <span>
-                AI & Automation
-              </span>
-
-              <span>
-                Backend & API Engineering
-              </span>
-
-              <span>
-                Cloud & DevOps
-              </span>
-
-            </div>
-
-
-
-            {/* =====================================
-                CONNECT
-            ====================================== */}
-
-            <div className="engix-footer-column">
-
-              <h4>
-                Connect
-              </h4>
-
-
+            <div className="engix-footer-contact-grid">
               <a
                 href="mailto:hello@engix.world"
                 className="engix-footer-contact-item"
               >
-
-                <Mail
-                  size={21}
-                  strokeWidth={1.7}
-                />
+                <Mail size={22} aria-hidden="true" />
 
                 <span>
-                  hello@engix.world
+                  <span className="engix-footer-contact-label">
+                    Email
+                  </span>
+                  <strong>hello@engix.world</strong>
                 </span>
-
               </a>
-
 
               <a
                 href="tel:+917355985134"
                 className="engix-footer-contact-item"
               >
-
-                <Phone
-                  size={21}
-                  strokeWidth={1.7}
-                />
+                <Phone size={22} aria-hidden="true" />
 
                 <span>
-                  +91 7355985134
+                  <span className="engix-footer-contact-label">
+                    Phone
+                  </span>
+                  <strong>+91 7355985134</strong>
                 </span>
-
               </a>
-
 
               <a
                 href="tel:+918960958818"
                 className="engix-footer-contact-item"
               >
-
-                <Phone
-                  size={21}
-                  strokeWidth={1.7}
-                />
+                <Phone size={22} aria-hidden="true" />
 
                 <span>
-                  +91 8960958818
+                  <span className="engix-footer-contact-label">
+                    Phone
+                  </span>
+                  <strong>+91 8960958818</strong>
                 </span>
-
               </a>
-
-
-              <div className="engix-footer-contact-item engix-footer-location-item">
-
-                <MapPin
-                  size={21}
-                  strokeWidth={1.7}
-                />
-
-                <span>
-                  552 Sahityanaka Mod, Ramnagar, Varanasi
-                </span>
-
-              </div>
-
             </div>
+          </section>
 
+          {visibleLocations.length > 0 && (
+            <section
+              className="engix-footer-locations"
+              aria-labelledby="engix-footer-locations-title"
+            >
+              <h3 id="engix-footer-locations-title">
+                Locations
+              </h3>
 
-          </div>
+              <div className="engix-footer-location-grid">
+                {visibleLocations.map((location) => (
+                  <article
+                    key={location.id}
+                    className="engix-footer-location-card"
+                  >
+                    <MapPin
+                      size={23}
+                      aria-hidden="true"
+                    />
 
+                    <div>
+                      <h4>{location.label}</h4>
+                      <address>{location.address}</address>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
-
-          {/* =========================================
-              LARGE CTA
-          ========================================== */}
-
-          <div className="engix-footer-cta">
-
+          <section
+            className="engix-footer-cta"
+            aria-labelledby="engix-footer-cta-title"
+          >
             <div className="engix-footer-cta-copy">
-
               <span>
-                HAVE A PROJECT IN MIND?
+                LET’S DISCUSS YOUR REQUIREMENTS
               </span>
 
-              <h2>
-                Let's build what's next.
+              <h2 id="engix-footer-cta-title">
+                Plan Your Next Digital Initiative with Engix.
               </h2>
 
+              <p>
+                Tell us what you need to build, improve or
+                promote. We will discuss the relevant
+                services, scope and next steps.
+              </p>
             </div>
-
 
             <Link
               to="/contact"
               className="engix-footer-cta-button"
             >
-
-              Start a project
-
+              Discuss your project
               <ArrowUpRight
                 size={22}
-                strokeWidth={1.7}
+                aria-hidden="true"
               />
-
             </Link>
-
-          </div>
-
-
-
-          {/* =========================================
-              BOTTOM
-          ========================================== */}
+          </section>
 
           <div className="engix-footer-bottom">
-
             <p>
-              © {new Date().getFullYear()} Engix Tech Private Limited.
-              All rights reserved.
+              © {new Date().getFullYear()} Engix Tech Private
+              Limited. All rights reserved.
             </p>
 
-
-            <div className="engix-footer-bottom-links">
-
-              <Link to="/privacy">
-                Privacy Policy
-              </Link>
-
-              <Link to="/terms">
-                Terms & Conditions
-              </Link>
-
-            </div>
-
+            <nav
+              className="engix-footer-bottom-links"
+              aria-label="Legal information"
+            >
+              <Link to="/privacy">Privacy Policy</Link>
+              <Link to="/terms">Terms & Conditions</Link>
+            </nav>
           </div>
-
-
         </div>
-
       </footer>
 
-
-
       <style>{`
-
-        /* =====================================================
-           FOOTER ROOT
-        ====================================================== */
-
         .engix-footer {
-          position: relative;
+          --ef-ink: #111318;
+          --ef-muted: #c5c9cd;
+          --ef-line: #34383d;
+          --ef-yellow: #fff14f;
+          --ef-green: #dff5df;
 
-          overflow: hidden;
-
-          padding:
-            82px 28px 28px;
-
-          background:
-            #050505;
-
-          color:
-            #ffffff;
+          padding: 48px 0 22px;
+          background: var(--ef-ink);
+          color: #ffffff;
+          font-family: inherit;
+          font-size: 16px;
+          line-height: 1.7;
+          overflow-wrap: anywhere;
+          border-top: 4px solid var(--ef-yellow);
         }
 
-
-        /*
-          Very subtle glow so footer
-          doesn't look completely flat.
-        */
-
-        .engix-footer::before {
-          content: '';
-
-          position: absolute;
-
-          width: 430px;
-          height: 430px;
-
-          top: -310px;
-          right: -150px;
-
-          border-radius: 50%;
-
-          background:
-            rgba(255, 241, 79, 0.055);
-
-          pointer-events: none;
+        .engix-footer *,
+        .engix-footer *::before,
+        .engix-footer *::after {
+          box-sizing: border-box;
         }
 
-
-        .engix-footer-shell {
-          position: relative;
-
-          z-index: 2;
-
-          width:
-            min(
-              1240px,
-              100%
-            );
-
+        .engix-footer .engix-footer-shell {
+          width: min(1260px, calc(100% - 56px));
           margin: 0 auto;
         }
 
-
-
-        /* =====================================================
-           TOP AREA
-        ====================================================== */
-
-        .engix-footer-top {
+        .engix-footer .engix-footer-top {
           display: grid;
-
           grid-template-columns:
-            1.45fr
-            .7fr
-            1fr
-            1fr;
-
-          gap:
-            70px;
-
-          padding-bottom:
-            70px;
+            minmax(0, 1.35fr)
+            minmax(0, .65fr)
+            repeat(2, minmax(0, 1fr));
+          gap: 28px;
+          padding-bottom: 32px;
         }
 
-
-
-        /* =====================================================
-           BRAND
-        ====================================================== */
-
-        .engix-footer-brand {
-          max-width:
-            440px;
+        .engix-footer .engix-footer-brand {
+          min-width: 0;
         }
 
-
-
-        /* =====================================================
-           FOOTER LOGO
-        ====================================================== */
-
-        .engix-footer-logo {
-          width:
-            max-content;
-
-          min-width:
-            0;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          gap:
-            10px;
-
-          flex-shrink:
-            0;
-
-          color:
-            #ffffff;
-
-          text-decoration:
-            none;
-
-          white-space:
-            nowrap;
-
-          transition:
-            opacity .2s ease,
-            transform .2s ease;
+        .engix-footer .engix-footer-logo {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          color: #ffffff;
+          text-decoration: none;
         }
 
-
-        .engix-footer-logo:hover {
-          opacity:
-            .9;
-
-          transform:
-            translateY(-1px);
+        .engix-footer .engix-footer-logo-icon {
+          display: grid;
+          place-items: center;
+          width: 46px;
+          height: 46px;
+          flex: 0 0 46px;
+          overflow: hidden;
+          background: transparent;
+          border: 0;
         }
 
-
-
-        /* =====================================================
-           LOGO IMAGE WRAPPER
-
-           IMPORTANT:
-           NO WHITE BACKGROUND
-        ====================================================== */
-
-        .engix-footer-logo-icon {
-          width:
-            50px;
-
-          height:
-            50px;
-
-          min-width:
-            50px;
-
-          min-height:
-            50px;
-
-          max-width:
-            50px;
-
-          max-height:
-            50px;
-
-          flex:
-            0 0 50px;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          margin:
-            0;
-
-          padding:
-            0;
-
-          overflow:
-            hidden;
-
-          box-sizing:
-            border-box;
-
-          background:
-            transparent !important;
-
-          background-color:
-            transparent !important;
-
-          border:
-            none;
-
-          border-radius:
-            0;
-
-          box-shadow:
-            none;
+        .engix-footer .engix-footer-logo-image {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          background: transparent;
+          margin: 0;
+          padding: 0;
         }
 
-
-
-        /* =====================================================
-           ACTUAL LOGO IMAGE
-        ====================================================== */
-
-        .engix-footer-logo-image {
-          width:
-            100%;
-
-          height:
-            100%;
-
-          max-width:
-            50px;
-
-          max-height:
-            50px;
-
-          display:
-            block;
-
-          object-fit:
-            contain;
-
-          object-position:
-            center;
-
-          margin:
-            0;
-
-          padding:
-            0;
-
-          flex-shrink:
-            0;
-
-          background:
-            transparent !important;
-
-          background-color:
-            transparent !important;
-
-          border:
-            none;
-
-          box-shadow:
-            none;
+        .engix-footer .engix-footer-logo-name {
+          color: #ffffff;
+          font-size: 27px;
+          font-weight: 750;
+          line-height: 1.1;
+          letter-spacing: -.035em;
         }
 
-
-
-        /* =====================================================
-           ENGIX NAME
-        ====================================================== */
-
-        .engix-footer-logo-name {
-          display:
-            block;
-
-          margin:
-            0;
-
-          padding:
-            0;
-
-          color:
-            #ffffff;
-
-          font-size:
-            27px;
-
-          font-weight:
-            750;
-
-          line-height:
-            1;
-
-          letter-spacing:
-            -.045em;
+        .engix-footer .engix-footer-description {
+          margin: 18px 0 0;
+          color: var(--ef-muted);
+          font-size: 16px;
+          line-height: 1.75;
         }
 
-
-
-        /* =====================================================
-           DESCRIPTION
-        ====================================================== */
-
-        .engix-footer-description {
-          max-width:
-            420px;
-
-          margin:
-            28px 0 0;
-
-          color:
-            #a5a5aa;
-
-          font-size:
-            15px;
-
-          line-height:
-            1.75;
+        .engix-footer .engix-footer-socials {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 20px;
         }
 
-
-
-        /* =====================================================
-           SOCIAL ICONS
-        ====================================================== */
-
-        .engix-footer-socials {
-          display:
-            flex;
-
-          gap:
-            10px;
-
-          margin-top:
-            30px;
+        .engix-footer .engix-footer-socials a {
+          display: grid;
+          place-items: center;
+          width: 44px;
+          height: 44px;
+          color: var(--ef-green);
+          border: 1px solid var(--ef-line);
+          border-radius: 6px;
+          text-decoration: none;
         }
 
-
-        .engix-footer-socials a {
-          width:
-            46px;
-
-          height:
-            46px;
-
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          border:
-            1px solid #333333;
-
-          border-radius:
-            50%;
-
-          color:
-            #ffffff;
-
-          text-decoration:
-            none;
-
-          background:
-            rgba(255,255,255,.018);
-
-          transition:
-            background .2s ease,
-            color .2s ease,
-            border-color .2s ease,
-            transform .2s ease;
+        .engix-footer .engix-footer-socials a:hover {
+          background: var(--ef-yellow);
+          color: var(--ef-ink);
+          border-color: var(--ef-yellow);
         }
 
-
-        .engix-footer-socials a:hover {
-          background:
-            #fff14f;
-
-          color:
-            #050505;
-
-          border-color:
-            #fff14f;
-
-          transform:
-            translateY(-2px);
+        .engix-footer h3 {
+          margin: 0 0 16px;
+          color: #ffffff;
+          font-size: 21px;
+          font-weight: 700;
+          line-height: 1.35;
+          letter-spacing: -.01em;
         }
 
-
-
-        /* =====================================================
-           FOOTER COLUMNS
-        ====================================================== */
-
-        .engix-footer-column {
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          align-items:
-            flex-start;
-
-          gap:
-            12px;
+        .engix-footer .engix-footer-column {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          min-width: 0;
         }
 
-
-        .engix-footer-column h4 {
-          margin:
-            0 0 18px;
-
-          color:
-            #ffffff;
-
-          font-size:
-            14px;
-
-          font-weight:
-            700;
-
-          letter-spacing:
-            .015em;
+        .engix-footer .engix-footer-column > a {
+          display: flex;
+          align-items: center;
+          min-height: 44px;
+          padding: 8px 0;
+          color: var(--ef-muted);
+          font-size: 16px;
+          line-height: 1.5;
+          text-decoration: none;
         }
 
-
-        .engix-footer-column > a,
-        .engix-footer-column > span {
-          color:
-            #929297;
-
-          text-decoration:
-            none;
-
-          font-size:
-            14px;
-
-          line-height:
-            1.65;
-
-          transition:
-            color .2s ease,
-            transform .2s ease;
+        .engix-footer a:hover {
+          color: var(--ef-yellow);
         }
 
-
-        .engix-footer-column > a:hover {
-          color:
-            #ffffff;
-
-          transform:
-            translateX(2px);
+        .engix-footer .engix-footer-column > a:hover {
+          text-decoration: underline;
+          text-underline-offset: 5px;
         }
 
-
-
-        /* =====================================================
-           CONTACT ITEMS
-        ====================================================== */
-
-        .engix-footer-contact-item {
-          display:
-            flex;
-
-          align-items:
-            flex-start;
-
-          gap:
-            10px;
+        .engix-footer .engix-footer-connect,
+        .engix-footer .engix-footer-locations {
+          padding: 28px 0;
+          border-top: 1px solid var(--ef-line);
         }
 
-
-        .engix-footer-contact-item svg {
-          flex-shrink:
-            0;
-
-          margin-top:
-            1px;
-
-          color:
-            #fff14f;
+        .engix-footer .engix-footer-contact-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 16px;
         }
 
-
-        .engix-footer-contact-item span {
-          color:
-            #929297;
-
-          font-size:
-            14px;
-
-          line-height:
-            1.6;
+        .engix-footer .engix-footer-contact-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          min-height: 64px;
+          padding: 14px 16px;
+          background: #1b2025;
+          border: 1px solid var(--ef-line);
+          border-radius: 6px;
+          color: #ffffff;
+          text-decoration: none;
         }
 
-
-        a.engix-footer-contact-item:hover span {
-          color:
-            #ffffff;
+        .engix-footer .engix-footer-contact-item svg {
+          color: var(--ef-green);
+          margin-top: 4px;
         }
 
-
-        .engix-footer-location-item {
-          margin-top:
-            6px;
+        .engix-footer .engix-footer-contact-label {
+          display: block;
+          color: var(--ef-muted);
+          font-size: 14px;
         }
 
-
-
-        /* =====================================================
-           LARGE CTA
-        ====================================================== */
-
-        .engix-footer-cta {
-          padding:
-            54px 0;
-
-          display:
-            flex;
-
-          align-items:
-            flex-end;
-
-          justify-content:
-            space-between;
-
-          gap:
-            40px;
-
-          border-top:
-            1px solid #282828;
-
-          border-bottom:
-            1px solid #282828;
+        .engix-footer .engix-footer-contact-item strong {
+          font-size: 17px;
+          font-weight: 600;
         }
 
-
-        .engix-footer-cta-copy > span {
-          display:
-            block;
-
-          margin-bottom:
-            14px;
-
-          color:
-            #fff14f;
-
-          font-size:
-            12px;
-
-          font-weight:
-            800;
-
-          letter-spacing:
-            .13em;
+        .engix-footer .engix-footer-location-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
         }
 
-
-        .engix-footer-cta h2 {
-          margin:
-            0;
-
-          color:
-            #ffffff;
-
-          font-size:
-            clamp(
-              3rem,
-              5vw,
-              5.4rem
-            );
-
-          line-height:
-            .95;
-
-          letter-spacing:
-            -.06em;
-
-          font-weight:
-            550;
+        .engix-footer .engix-footer-location-card {
+          display: grid;
+          grid-template-columns: 28px minmax(0, 1fr);
+          align-items: start;
+          gap: 12px;
+          padding: 20px;
+          border: 1px solid var(--ef-line);
+          border-radius: 6px;
+          background: #1b2025;
         }
 
-
-        .engix-footer-cta-button {
-          min-height:
-            57px;
-
-          padding:
-            0 24px;
-
-          display:
-            inline-flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          gap:
-            10px;
-
-          flex-shrink:
-            0;
-
-          border-radius:
-            8px;
-
-          background:
-            #fff14f;
-
-          color:
-            #050505;
-
-          text-decoration:
-            none;
-
-          font-size:
-            14px;
-
-          font-weight:
-            750;
-
-          transition:
-            transform .2s ease,
-            background .2s ease,
-            box-shadow .2s ease;
+        .engix-footer .engix-footer-location-card > svg {
+          margin-top: 3px;
+          color: var(--ef-yellow);
         }
 
-
-        .engix-footer-cta-button:hover {
-          background:
-            #fff36c;
-
-          transform:
-            translateY(-2px);
-
-          box-shadow:
-            0 12px 28px
-            rgba(255,241,79,.11);
+        .engix-footer .engix-footer-location-card h4 {
+          margin: 0 0 8px;
+          color: #ffffff;
+          font-size: 19px;
+          font-weight: 650;
+          line-height: 1.4;
         }
 
-
-
-        /* =====================================================
-           BOTTOM
-        ====================================================== */
-
-        .engix-footer-bottom {
-          padding-top:
-            28px;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap:
-            25px;
+        .engix-footer .engix-footer-location-card address {
+          color: var(--ef-muted);
+          font-size: 16px;
+          line-height: 1.65;
+          font-style: normal;
         }
 
-
-        .engix-footer-bottom p {
-          margin:
-            0;
-
-          color:
-            #707075;
-
-          font-size:
-            12px;
-
-          line-height:
-            1.5;
+        .engix-footer .engix-footer-cta {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 28px;
+          padding: 32px 0;
+          border-top: 1px solid var(--ef-line);
+          border-bottom: 1px solid var(--ef-line);
         }
 
-
-        .engix-footer-bottom-links {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            23px;
+        .engix-footer .engix-footer-cta-copy > span {
+          display: inline-block;
+          padding: 6px 10px;
+          background: var(--ef-green);
+          color: #253c29;
+          font-size: 13px;
+          font-weight: 750;
+          line-height: 1.5;
+          letter-spacing: .065em;
         }
 
-
-        .engix-footer-bottom-links a {
-          color:
-            #707075;
-
-          text-decoration:
-            none;
-
-          font-size:
-            12px;
-
-          transition:
-            color .2s ease;
+        .engix-footer .engix-footer-cta h2 {
+          max-width: 830px;
+          margin: 16px 0;
+          color: #ffffff;
+          font-size: clamp(29px, 2.85vw, 42px);
+          font-weight: 700;
+          line-height: 1.2;
+          letter-spacing: -.025em;
+          text-wrap: balance;
         }
 
-
-        .engix-footer-bottom-links a:hover {
-          color:
-            #ffffff;
+        .engix-footer .engix-footer-cta p {
+          max-width: 780px;
+          margin: 0;
+          color: var(--ef-muted);
+          font-size: 17px;
+          line-height: 1.7;
         }
 
+        .engix-footer .engix-footer-cta-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          min-height: 50px;
+          padding: 13px 18px;
+          border-radius: 6px;
+          background: var(--ef-yellow);
+          color: var(--ef-ink);
+          font-size: 16px;
+          font-weight: 650;
+          line-height: 1.5;
+          text-decoration: none;
+        }
 
+        .engix-footer .engix-footer-cta-button:hover {
+          background: var(--ef-green);
+          color: var(--ef-ink);
+        }
 
-        /* =====================================================
-           TABLET
-        ====================================================== */
+        .engix-footer .engix-footer-bottom {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 12px 24px;
+          padding-top: 20px;
+        }
 
-        @media (max-width: 1000px) {
+        .engix-footer .engix-footer-bottom p {
+          margin: 0;
+          color: var(--ef-muted);
+          font-size: 14px;
+          line-height: 1.6;
+        }
 
-          .engix-footer-top {
-            grid-template-columns:
-              repeat(2, 1fr);
+        .engix-footer .engix-footer-bottom-links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px 24px;
+        }
 
-            gap:
-              50px 40px;
+        .engix-footer .engix-footer-bottom-links a {
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          color: var(--ef-muted);
+          font-size: 14px;
+          text-decoration: none;
+        }
+
+        .engix-footer .engix-footer-bottom-links a:hover {
+          color: var(--ef-yellow);
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
+
+        .engix-footer svg {
+          flex-shrink: 0;
+        }
+
+        .engix-footer a:focus-visible {
+          outline: 3px solid var(--ef-yellow);
+          outline-offset: 4px;
+        }
+
+        @media (max-width: 1100px) {
+          .engix-footer .engix-footer-top {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
           }
 
-
-          .engix-footer-brand {
-            grid-column:
-              1 / -1;
-
-            max-width:
-              620px;
+          .engix-footer .engix-footer-brand {
+            grid-column: 1 / -1;
+            max-width: 820px;
           }
 
-
-          /*
-            TABLET LOGO
-          */
-
-          .engix-footer-logo-icon {
-            width:
-              47px;
-
-            height:
-              47px;
-
-            min-width:
-              47px;
-
-            min-height:
-              47px;
-
-            max-width:
-              47px;
-
-            max-height:
-              47px;
-
-            flex-basis:
-              47px;
+          .engix-footer .engix-footer-location-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
-
-
-          .engix-footer-logo-image {
-            max-width:
-              47px;
-
-            max-height:
-              47px;
-          }
-
-
-          .engix-footer-logo-name {
-            font-size:
-              26px;
-          }
-
         }
 
+        @media (max-width: 820px) {
+          .engix-footer .engix-footer-shell {
+            width: calc(100% - 40px);
+          }
 
+          .engix-footer .engix-footer-contact-grid {
+            grid-template-columns: minmax(0, 1fr);
+          }
 
-        /* =====================================================
-           MOBILE
-        ====================================================== */
+          .engix-footer .engix-footer-cta {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 20px;
+          }
 
-        @media (max-width: 650px) {
+          .engix-footer .engix-footer-cta-button {
+            justify-self: start;
+          }
+        }
 
+        @media (max-width: 540px) {
           .engix-footer {
-            padding:
-              64px 16px 25px;
+            padding-top: 36px;
           }
 
-
-          .engix-footer-top {
-            grid-template-columns:
-              1fr;
-
-            gap:
-              40px;
-
-            padding-bottom:
-              50px;
+          .engix-footer .engix-footer-shell {
+            width: calc(100% - 32px);
           }
 
-
-          .engix-footer-brand {
-            grid-column:
-              auto;
-
-            max-width:
-              100%;
+          .engix-footer .engix-footer-top,
+          .engix-footer .engix-footer-location-grid {
+            grid-template-columns: minmax(0, 1fr);
           }
 
-
-
-          /*
-            MOBILE LOGO
-          */
-
-          .engix-footer-logo {
-            gap:
-              8px;
+          .engix-footer .engix-footer-brand {
+            grid-column: auto;
           }
 
-
-          .engix-footer-logo-icon {
-            width:
-              43px;
-
-            height:
-              43px;
-
-            min-width:
-              43px;
-
-            min-height:
-              43px;
-
-            max-width:
-              43px;
-
-            max-height:
-              43px;
-
-            flex-basis:
-              43px;
+          .engix-footer .engix-footer-logo-icon {
+            width: 40px;
+            height: 40px;
+            flex-basis: 40px;
           }
 
-
-          .engix-footer-logo-image {
-            max-width:
-              43px;
-
-            max-height:
-              43px;
+          .engix-footer .engix-footer-logo-name {
+            font-size: 24px;
           }
 
-
-          .engix-footer-logo-name {
-            font-size:
-              24px;
+          .engix-footer .engix-footer-cta-copy > span {
+            font-size: 11px;
+            letter-spacing: .045em;
           }
 
-
-          .engix-footer-description {
-            max-width:
-              100%;
-
-            font-size:
-              14px;
+          .engix-footer .engix-footer-cta-button {
+            width: 100%;
+            justify-content: space-between;
           }
 
-
-          .engix-footer-socials {
-            margin-top:
-              25px;
+          .engix-footer .engix-footer-bottom {
+            align-items: flex-start;
+            flex-direction: column;
           }
-
-
-          .engix-footer-socials a {
-            width:
-              44px;
-
-            height:
-              44px;
-          }
-
-
-          .engix-footer-column h4 {
-            margin-bottom:
-              12px;
-          }
-
-
-          /*
-            CTA
-          */
-
-          .engix-footer-cta {
-            align-items:
-              flex-start;
-
-            flex-direction:
-              column;
-
-            padding:
-              43px 0;
-
-            gap:
-              29px;
-          }
-
-
-          .engix-footer-cta h2 {
-            font-size:
-              clamp(
-                2.7rem,
-                12vw,
-                4.4rem
-              );
-          }
-
-
-          .engix-footer-cta-button {
-            width:
-              100%;
-
-            box-sizing:
-              border-box;
-
-            justify-content:
-              space-between;
-          }
-
-
-          /*
-            BOTTOM
-          */
-
-          .engix-footer-bottom {
-            align-items:
-              flex-start;
-
-            flex-direction:
-              column;
-
-            gap:
-              17px;
-          }
-
-
-          .engix-footer-bottom-links {
-            flex-wrap:
-              wrap;
-          }
-
         }
-
-
-
-        /* =====================================================
-           SMALL MOBILE
-        ====================================================== */
-
-        @media (max-width: 430px) {
-
-          .engix-footer-logo-icon {
-            width:
-              40px;
-
-            height:
-              40px;
-
-            min-width:
-              40px;
-
-            min-height:
-              40px;
-
-            max-width:
-              40px;
-
-            max-height:
-              40px;
-
-            flex-basis:
-              40px;
-          }
-
-
-          .engix-footer-logo-image {
-            max-width:
-              40px;
-
-            max-height:
-              40px;
-          }
-
-
-          .engix-footer-logo-name {
-            font-size:
-              23px;
-          }
-
-
-          .engix-footer-bottom-links {
-            align-items:
-              flex-start;
-
-            flex-direction:
-              column;
-
-            gap:
-              9px;
-          }
-
-        }
-
       `}</style>
-
     </>
   );
 }
